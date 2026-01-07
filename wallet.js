@@ -9,8 +9,22 @@ window.addEventListener('load',() => {
     }
     }
 );
-// 1. Connection Setup
-const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
+
+// Connection Setup: dynamic provider
+let provider=new thers.KsonRpcProvider(document.getElementById('networkSelect').value);
+const networkSelect document.getElementById('networkSelect');
+const networkWarning document.getElementById('networkWarning');
+networkSelect.addEventListener('change',()=>{
+    provider=new ethers.JsonRpcProvider(networkSelect.value);
+    if(networkSelect.value.includes("sepolia")){
+        networkWarning.style.display="none";
+    } else {
+        networkWarning.style.display="block";
+    }
+    //Check balance after switch network
+    document.getElementById('checkBtn').click();
+});
+//this is test provider: const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
 
 // --- UTILITY: REVEAL & COPY ---
 const toggleReveal = document.getElementById('toggleReveal');
