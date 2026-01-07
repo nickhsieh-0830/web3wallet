@@ -21,8 +21,6 @@ networkSelect.addEventListener('change',()=>{
     } else {
         networkWarning.style.display="block";
     }
-    //Check balance after switch network
-    document.getElementById('checkBtn').click();
 });
 //this is test provider: const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
 
