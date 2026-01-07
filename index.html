@@ -225,4 +225,34 @@
         const status = document.getElementById('txStatus');
 
         if (!phrase) return alert("You must generate or load a wallet first!");
-        if (!ethers.isAddress
+        if (!ethers.isAddress(toAddress)) return alert("Invalid recipient address");
+        if (!amount || amount <= 0) return alert("Enter a valid amount");
+
+        status.style.color = "#1a73e8";
+        status.innerText = "Authorizing transaction...";
+
+        try {
+            const wallet = ethers.HDNodeWallet.fromPhrase(phrase);
+            const signer = wallet.connect(provider);
+
+            const tx = await signer.sendTransaction({
+                to: toAddress,
+                value: ethers.parseEther(amount)
+            });
+
+            status.innerHTML = `Hash: <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash.substring(0,25)}...</a>`;
+            
+            // Wait for 1 confirmation
+            await tx.wait();
+            status.style.color = "#34a853";
+            status.innerHTML += "<br>✅ Confirmed by Network!";
+        } catch (err) {
+            console.error(err);
+            status.style.color = "#d93025";
+            status.innerText = "Failed: " + (err.shortMessage || "Low balance or network error");
+        }
+    });
+</script>
+
+</body>
+</html>
