@@ -119,6 +119,6 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
 document.getElementById('clearDataBtn').addEventListener('click',() -> {
     if(confirm("This will clear your saved address from this browser. You funds remain safe on the blockchain. Continue?")){
         localStorage.removeItem('userAddress');
-        location.reload();//reset UI
+        location.reload();//reload browser
     }
 });
