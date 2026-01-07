@@ -12,8 +12,8 @@ window.addEventListener('load',() => {
 
 // Connection Setup: dynamic provider
 let provider=new thers.KsonRpcProvider(document.getElementById('networkSelect').value);
-const networkSelect document.getElementById('networkSelect');
-const networkWarning document.getElementById('networkWarning');
+const networkSelect=document.getElementById('networkSelect');
+const networkWarning=document.getElementById('networkWarning');
 networkSelect.addEventListener('change',()=>{
     provider=new ethers.JsonRpcProvider(networkSelect.value);
     if(networkSelect.value.includes("sepolia")){
