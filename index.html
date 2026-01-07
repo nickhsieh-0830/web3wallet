@@ -30,6 +30,17 @@
 <div class="wallet-container">
     <h2>My Web3 Wallet 🦊</h2>
 
+    <section style="border-bottom: 2px solid #eee; margin-bottom: 20px;">
+        <h4>Network Settings</h4>
+        <select id="networkSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #1a73e8; font-weight: bold;">
+            <option value="https://ethereum-sepolia-rpc.publicnode.com">🌐 Sepolia Testnet (Play Money)</option>
+            <option value="https://ethereum-rpc.publicnode.com">💰 Ethereum Mainnet (REAL MONEY)</option>
+        </select>
+        <p id="networkWarning" style="font-size: 0.7rem; color; #d93025; margin-top: 5px; display: none;">
+            ⚠️ WARNING: You are on Mainnet. Transactions cost real money.
+        </p>
+    </section>
+
     <section>
         <h4>Portfolio (Sepolia Testnet)</h4>
         <input type="text" id="addressInput" placeholder="Enter 0x address...">
