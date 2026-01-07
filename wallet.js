@@ -114,3 +114,11 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
         status.innerText = "Failed: " + (err.shortMessage || "Network error");
     }
 });
+
+// --- LOGIC: CLEAR DATA ---
+document.getElementById('clearDataBtn').addEventListener('click',() -> {
+    if(confirm("This will clear your saved address from this browser. You funds remain safe on the blockchain. Continue?")){
+        localStorage.removeItem('userAddress');
+        location.reload();//reset UI
+    }
+});
