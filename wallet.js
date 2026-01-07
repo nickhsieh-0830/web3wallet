@@ -1,3 +1,14 @@
+// Once page load, check if saved address exist locally
+window.addEventListener('load',() => {
+    const savedAddress=localStorage.getItem('userAddress');
+    if(savedAddress){
+        document.getElementById('addressInput').value=savedAddress;
+        document.getElementById('recoveredInfo').style.display="block";
+        document.getElementById('recoveredAddress').innerText=savedAddress;
+        document.getElementById('checkBtn').click();//check balance automatically
+    }
+    }
+);
 // 1. Connection Setup
 const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
 
