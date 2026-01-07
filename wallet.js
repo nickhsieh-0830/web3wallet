@@ -73,6 +73,7 @@ document.getElementById('recoverBtn').addEventListener('click', () => {
         
         document.getElementById('recoveredInfo').style.display = "block";
         document.getElementById('recoveredAddress').innerText = recoveredWallet.address;
+        localStorage.setItem('userAddress',recoveredWallet.address);//save address in browser's memory
     } catch (err) {
         status.innerText = "❌ Invalid Phrase. Check your words.";
         status.style.color = "#d93025";
