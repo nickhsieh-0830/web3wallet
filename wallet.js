@@ -116,9 +116,10 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
 });
 
 // --- LOGIC: CLEAR DATA ---
-document.getElementById('clearDataBtn').addEventListener('click',() -> {
+document.getElementById('clearDataBtn').addEventListener('click',() => {
     if(confirm("This will clear your saved address from this browser. You funds remain safe on the blockchain. Continue?")){
         localStorage.removeItem('userAddress');
-        location.reload();//reload browser
+        //reload browser
+        location.reload();
     }
 });
