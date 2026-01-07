@@ -11,7 +11,7 @@ window.addEventListener('load',() => {
 );
 
 // Connection Setup: dynamic provider
-let provider=new thers.KsonRpcProvider(document.getElementById('networkSelect').value);
+let provider=new ethers.KsonRpcProvider(document.getElementById('networkSelect').value);
 const networkSelect=document.getElementById('networkSelect');
 const networkWarning=document.getElementById('networkWarning');
 networkSelect.addEventListener('change',()=>{
