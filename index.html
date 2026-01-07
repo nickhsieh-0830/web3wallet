@@ -1,257 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web3 Wallet</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
-    <style>
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-            background-color: #f4f7f9; 
-            color: #333; 
-            padding: 20px; 
-            line-height: 1.5; 
-        }
-        .wallet-container { 
-            max-width: 480px; 
-            margin: auto; 
-            background: white; 
-            padding: 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-        }
-        h2 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
-        section { 
-            background: #ffffff; 
-            padding: 18px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            border: 1px solid #eef2f6; 
-        }
-        h4 { 
-            margin: 0 0 12px 0; 
-            color: #70757a; 
-            font-size: 0.8rem; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-        }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 8px 0; 
-            border: 1px solid #dcdfe6; 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            font-family: monospace; 
-        }
-        button { 
-            width: 100%; 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: none; 
-            background: #1a73e8; 
-            color: white; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-        }
-        button:hover { 
-            background: #1557b0; 
-            transform: translateY(-1px); 
-        }
-        .secondary-btn { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
-        .secondary-btn:hover { background: #e8eaed; }
-        .send-btn { background: #34a853; }
-        .send-btn:hover { background: #2d8e47; }
-        .copy-badge { 
-            float: right; 
-            font-size: 0.7rem; 
-            color: #1a73e8; 
-            cursor: pointer; 
-            text-decoration: underline; 
-            background: none;
-            border: none;
-            padding: 0;
-            width: auto;
-        }
-        code { 
-            display: block; 
-            background: #f8f9fa; 
-            padding: 10px; 
-            border-radius: 8px; 
-            font-size: 0.8rem; 
-            word-break: break-all; 
-            color: #444; 
-            margin-top: 5px; 
-        }
-        .reveal-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            margin-top: 8px; 
-            font-size: 0.85rem; 
-            color: #5f6368; 
-        }
-        #txStatus {
-            font-size: 0.75rem;
-            margin-top: 12px;
-            font-weight: 500;
-            word-break: break-all;
-        }
-    </style>
-</head>
-<body>
+<style>
+  body { font-family: 'Inter', -apple-system, sans-serif; background-color: #f4f7f9; color: #333; padding: 20px; line-height: 1.5; }
+  .wallet-container { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  h2 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
+  section { background: #ffffff; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eef2f6; }
+  h4 { margin: 0 0 12px 0; color: #70757a; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dcdfe6; border-radius: 10px; box-sizing: border-box; font-family: monospace; }
+  button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1a73e8; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  button:hover { background: #1557b0; transform: translateY(-1px); }
+  .secondary-btn { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
+  .secondary-btn:hover { background: #e8eaed; }
+  .send-btn { background: #34a853; }
+  .send-btn:hover { background: #2d8e47; }
+  .copy-badge { float: right; font-size: 0.7rem; color: #1a73e8; cursor: pointer; text-decoration: underline; }
+  code { display: block; background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 0.8rem; word-break: break-all; color: #444; margin-top: 5px; }
+  .reveal-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.85rem; color: #5f6368; }
+</style>
 
 <div class="wallet-container">
-    <h2>My Web3 Wallet 🦊</h2>
+  <h2>My Web3 Wallet 🦊</h2>
 
-    <section>
-        <h4>Portfolio (Sepolia Testnet)</h4>
-        <input type="text" id="addressInput" placeholder="Enter 0x address...">
-        <button id="checkBtn">Check Balance</button>
-        <p style="margin-top:12px; font-size: 0.95rem;">Balance: <strong id="balanceText">0.00</strong> ETH</p>
-    </section>
+  <section>
+    <h4>Portfolio (Sepolia Testnet)</h4>
+    <input type="text" id="addressInput" placeholder="Enter 0x address...">
+    <button id="checkBtn">Check Balance</button>
+    <p style="margin-top:12px; font-size: 0.95rem;">Balance: <strong id="balanceText">0.00</strong> ETH</p>
+  </section>
 
-    <section>
-        <h4>Create Account</h4>
-        <button id="genBtn" class="secondary-btn">Generate New Seed Phrase</button>
-        <div id="walletInfo" style="display: none; margin-top:15px;">
-            <button id="copyBtn" class="copy-badge">Copy Phrase</button>
-            <small style="color: #d93025; font-weight: bold;">Secret Phrase:</small>
-            <input type="password" id="phraseText" readonly>
-            <div class="reveal-row">
-                <input type="checkbox" id="toggleReveal" style="width: auto; margin: 0;"> 
-                <label for="toggleReveal" style="cursor:pointer">Show Words</label>
-            </div>
-            <p style="font-size: 0.75rem; margin-top:12px; color: #70757a;">Public Address:</p>
-            <code id="addressText"></code>
-        </div>
-    </section>
+  <section>
+    <h4>Create Account</h4>
+    <button id="genBtn" class="secondary-btn">Generate New Seed Phrase</button>
+    <div id="walletInfo" style="display: none; margin-top:15px;">
+      <span id="copyBtn" class="copy-badge">Copy Phrase</span>
+      <small style="color: #d93025; font-weight: bold;">Secret Phrase:</small>
+      <input type="password" id="phraseText" readonly>
+      <div class="reveal-row">
+        <input type="checkbox" id="toggleReveal" style="width: auto; margin: 0;"> 
+        <label for="toggleReveal" style="cursor:pointer">Show Words</label>
+      </div>
+      <p style="font-size: 0.75rem; margin-top:12px; color: #70757a;">Public Address:</p>
+      <code id="addressText"></code>
+    </div>
+  </section>
 
-    <section>
-        <h4>Access Existing Wallet</h4>
-        <input type="text" id="recoverInput" placeholder="Paste 12 words here...">
-        <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
-        <div id="recoveredInfo" style="display: none; margin-top:12px;">
-            <p style="font-size: 0.75rem; color: #70757a;">Active Address:</p>
-            <code id="recoveredAddress"></code>
-        </div>
-    </section>
+  <section>
+    <h4>Access Existing Wallet</h4>
+    <input type="text" id="recoverInput" placeholder="Paste 12 words here...">
+    <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
+    <div id="recoveredInfo" style="display: none; margin-top:12px;">
+      <p style="font-size: 0.75rem; color: #70757a;">Active Address:</p>
+      <code id="recoveredAddress"></code>
+    </div>
+  </section>
 
-    <section>
-        <h4>Transfer ETH</h4>
-        <input type="text" id="sendTo" placeholder="Recipient 0x address...">
-        <input type="number" id="sendAmount" placeholder="Amount (e.g. 0.01)" step="0.001">
-        <button id="sendBtn" class="send-btn">Sign & Send Transaction</button>
-        <p id="txStatus"></p>
-    </section>
+  <section>
+    <h4>Transfer ETH</h4>
+    <input type="text" id="sendTo" placeholder="Recipient 0x address...">
+    <input type="number" id="sendAmount" placeholder="Amount (e.g. 0.01)" step="0.001">
+    <button id="sendBtn" class="send-btn">Sign & Send Transaction</button>
+    <p id="txStatus" style="font-size: 0.75rem; margin-top: 12px; font-weight: 500;"></p>
+  </section>
 </div>
 
 <script>
-    // 1. Setup Connection to Sepolia (Public Node)
-    // We use a public node provider to talk to the blockchain
-    const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
+// 1. Setup Connection to Sepolia (Public Node)
+const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
 
-    // --- UTILITY: REVEAL & COPY ---
-    const toggleReveal = document.getElementById('toggleReveal');
-    const phraseInput = document.getElementById('phraseText');
-    const copyBtn = document.getElementById('copyBtn');
+// --- UTILITY: REVEAL & COPY ---
+const toggleReveal = document.getElementById('toggleReveal');
+const phraseInput = document.getElementById('phraseText');
+const copyBtn = document.getElementById('copyBtn');
 
-    toggleReveal.addEventListener('change', () => {
-        phraseInput.type = toggleReveal.checked ? 'text' : 'password';
+toggleReveal.addEventListener('change', () => {
+  phraseInput.type = toggleReveal.checked ? 'text' : 'password';
+});
+
+copyBtn.addEventListener('click', () => {
+  if (!phraseInput.value) return;
+  navigator.clipboard.writeText(phraseInput.value).then(() => {
+    const originalText = copyBtn.innerText;
+    copyBtn.innerText = "Copied!";
+    setTimeout(() => copyBtn.innerText = originalText, 2000);
+  });
+});
+
+// --- LOGIC: CHECK BALANCE ---
+document.getElementById('checkBtn').addEventListener('click', async () => {
+  const address = document.getElementById('addressInput').value.trim();
+  const balanceText = document.getElementById('balanceText');
+  
+  if (!ethers.isAddress(address)) return alert("Invalid Address");
+  
+  balanceText.innerText = "Syncing...";
+  try {
+    const balanceWei = await provider.getBalance(address);
+    balanceText.innerText = ethers.formatEther(balanceWei);
+  } catch (err) {
+    balanceText.innerText = "Connection Error";
+  }
+});
+
+// --- LOGIC: GENERATE ---
+document.getElementById('genBtn').addEventListener('click', () => {
+  const randomWallet = ethers.Wallet.createRandom();
+  document.getElementById('walletInfo').style.display = "block";
+  document.getElementById('phraseText').value = randomWallet.mnemonic.phrase;
+  document.getElementById('addressText').innerText = randomWallet.address;
+  
+  // Safety reset
+  toggleReveal.checked = false;
+  phraseInput.type = 'password';
+});
+
+// --- LOGIC: RECOVER ---
+document.getElementById('recoverBtn').addEventListener('click', () => {
+  const phrase = document.getElementById('recoverInput').value.trim();
+  try {
+    const recoveredWallet = ethers.HDNodeWallet.fromPhrase(phrase);
+    document.getElementById('recoveredInfo').style.display = "block";
+    document.getElementById('recoveredAddress').innerText = recoveredWallet.address;
+    alert("Identity Verified: Wallet Loaded.");
+  } catch (err) {
+    alert("Invalid Phrase. Please check your words.");
+  }
+});
+
+// --- LOGIC: SEND ---
+document.getElementById('sendBtn').addEventListener('click', async () => {
+  const toAddress = document.getElementById('sendTo').value.trim();
+  const amount = document.getElementById('sendAmount').value;
+  // Get phrase from whichever field is filled
+  const phrase = document.getElementById('recoverInput').value.trim() || 
+                 document.getElementById('phraseText').value;
+  const status = document.getElementById('txStatus');
+
+  if (!phrase) return alert("You must generate or load a wallet first!");
+  if (!ethers.isAddress(toAddress)) return alert("Invalid recipient address");
+
+  status.style.color = "#1a73e8";
+  status.innerText = "Authorizing transaction...";
+
+  try {
+    const wallet = ethers.HDNodeWallet.fromPhrase(phrase);
+    const signer = wallet.connect(provider);
+
+    const tx = await signer.sendTransaction({
+      to: toAddress,
+      value: ethers.parseEther(amount)
     });
 
-    copyBtn.addEventListener('click', () => {
-        if (!phraseInput.value) return;
-        navigator.clipboard.writeText(phraseInput.value).then(() => {
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = "Copied!";
-            setTimeout(() => copyBtn.innerText = originalText, 2000);
-        });
-    });
-
-    // --- LOGIC: CHECK BALANCE ---
-    document.getElementById('checkBtn').addEventListener('click', async () => {
-        const address = document.getElementById('addressInput').value.trim();
-        const balanceText = document.getElementById('balanceText');
-        
-        if (!ethers.isAddress(address)) return alert("Invalid Address");
-        
-        balanceText.innerText = "Syncing...";
-        try {
-            const balanceWei = await provider.getBalance(address);
-            balanceText.innerText = ethers.formatEther(balanceWei);
-        } catch (err) {
-            balanceText.innerText = "Connection Error";
-        }
-    });
-
-    // --- LOGIC: GENERATE ---
-    document.getElementById('genBtn').addEventListener('click', () => {
-        const randomWallet = ethers.Wallet.createRandom();
-        document.getElementById('walletInfo').style.display = "block";
-        document.getElementById('phraseText').value = randomWallet.mnemonic.phrase;
-        document.getElementById('addressText').innerText = randomWallet.address;
-        
-        // Safety reset: hide words by default
-        toggleReveal.checked = false;
-        phraseInput.type = 'password';
-    });
-
-    // --- LOGIC: RECOVER ---
-    document.getElementById('recoverBtn').addEventListener('click', () => {
-        const phrase = document.getElementById('recoverInput').value.trim();
-        try {
-            const recoveredWallet = ethers.HDNodeWallet.fromPhrase(phrase);
-            document.getElementById('recoveredInfo').style.display = "block";
-            document.getElementById('recoveredAddress').innerText = recoveredWallet.address;
-            alert("Identity Verified: Wallet Loaded.");
-        } catch (err) {
-            alert("Invalid Phrase. Please check your words.");
-        }
-    });
-
-    // --- LOGIC: SEND ---
-    document.getElementById('sendBtn').addEventListener('click', async () => {
-        const toAddress = document.getElementById('sendTo').value.trim();
-        const amount = document.getElementById('sendAmount').value;
-        
-        // Priority: Use recovered phrase first, then generated phrase
-        const phrase = document.getElementById('recoverInput').value.trim() || 
-                       document.getElementById('phraseText').value;
-        const status = document.getElementById('txStatus');
-
-        if (!phrase) return alert("You must generate or load a wallet first!");
-        if (!ethers.isAddress(toAddress)) return alert("Invalid recipient address");
-        if (!amount || amount <= 0) return alert("Enter a valid amount");
-
-        status.style.color = "#1a73e8";
-        status.innerText = "Authorizing transaction...";
-
-        try {
-            const wallet = ethers.HDNodeWallet.fromPhrase(phrase);
-            const signer = wallet.connect(provider);
-
-            const tx = await signer.sendTransaction({
-                to: toAddress,
-                value: ethers.parseEther(amount)
-            });
-
-            status.innerHTML = `Hash: <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash.substring(0,25)}...</a>`;
-            
-            // Wait for 1 confirmation
-            await tx.wait();
-            status.style.color = "#34a853";
-            status.innerHTML += "<br>✅ Confirmed by Network!";
-        } catch (err) {
-            console.error(err);
-            status.style.color = "#d93025";
-            status.innerText = "Failed: " + (err.shortMessage || "Low balance or network error");
-        }
-    });
+    status.innerHTML = `Hash: <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash.substring(0,20)}...</a>`;
+    
+    await tx.wait();
+    status.style.color = "#34a853";
+    status.innerHTML += "<br>✅ Confirmed by Network!";
+  } catch (err) {
+    status.style.color = "#d93025";
+    status.innerText = "Failed: " + (err.shortMessage || "Low balance or network error");
+  }
+});
 </script>
 
 </body>
