@@ -13,6 +13,20 @@ async function updateNetworkStatus(){
 }
 updateNetworkStatus();// Initial check
 setInterval(updateNetworkStatus,10000); //check network status every 10 secs.
+const NETWORKS={
+    sepolia:{
+        name: "Sepolia Testnet",
+        rpc: "https://ethereum-sepolia-rpc.publicnode.com",
+        explorerApi: "https://api-sepolia.etherscan.io/api",//Testnet API
+        symbol: "SEP"
+    },
+    mainnet: {
+        name: "Etheresum Mainnet",
+        rpc: "https://ethereum-rpc.publicnode.com",
+        explorerApi: "https://api.etherscan.io/api", // Mainnet API
+        symbol: "ETH"
+    }
+};
 
 // Once page load, check if saved address exist locally
 window.addEventListener('load',() => {
@@ -154,23 +168,34 @@ document.getElementById('clearDataBtn').addEventListener('click',() => {
 });
 
 //checkHistory
-async function fetchHistory(address){
-    const list=document.getElementById('historyList');
-    const apiKey='F1K8PWJSKMBM7J4QEE97WXZTEA95WSXQFW'; 
-    // Sepolia API URL
-    const url = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
-    list.innerHTML="Loading history...";
-    try{
-        const response=await fetch(url);
-        const data=await response.json();
-        if (data.status==="1"){
-            list.innerHTML=data.result.slice(0,5).map(tx =>`
+async function fetchHistory(address) {
+    const list = document.getElementById('historyList');
+    // Use the API URL from the currently selected network
+    const apiBase = currentNetwork.explorerApi;
+    const apiKey = 'YOUR_ETHERSCAN_API_KEY'; 
+
+    const url = `${apiBase}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+
+    list.innerHTML = "Loading history...";
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.status === "1" && data.result.length > 0) {
+            list.innerHTML = data.result.slice(0, 5).map(tx => `
                 <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
-                    <strong>${tx.from.toLowerCase()===address.toLowerCase()? '📤 Sent' : '📥 Received'}</strong>
-                    <br>Amonut: ${ethers.formatEther(tx.value)} ETH
-                    <br><small><a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">View Transactions</a></small>
+                    <span style="color: ${tx.from.toLowerCase() === address.toLowerCase() ? '#d93025' : '#34a853'}">
+                        ${tx.from.toLowerCase() === address.toLowerCase() ? '📤 Sent' : '📥 Received'}
+                    </span>
+                    <br><strong>${ethers.formatEther(tx.value)} ${currentNetwork.symbol}</strong>
+                    <br><small style="color:gray;">${new Date(tx.timeStamp * 1000).toLocaleString()}</small>
                 </div>
             `).join('');
-        } else {list.innerHTML="No transactions found.";}        
-    } catch(err){list.innerHTML="Error loading history.";}
+        } else {
+            list.innerHTML = "<p style='color:gray;'>No activity found on this network.</p>";
+        }
+    } catch (err) {
+        list.innerHTML = "Error loading history.";
+    }
 }
