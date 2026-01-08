@@ -171,53 +171,93 @@ document.getElementById('clearDataBtn').addEventListener('click',() => {
 async function fetchHistory(address) {
     const list = document.getElementById('historyList');
     const apiBase = currentNetwork.explorerApi;
-    const apiKey = 'YOUR_ETHERSCAN_API_KEY'; // ⚠️ Make sure this is real!
+    const apiKey = 'YOUR_ETHERSCAN_API_KEY'; // ⚠️ Use your real key!
 
-    list.innerHTML = "Loading history...";
+    list.innerHTML = `<div style="text-align:center; padding: 10px; color: #666;">⏳ Scanning Blockchain...</div>`;
 
     try {
-        // 1. Fetch Normal Transactions
-        const normalUrl = `${apiBase}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
-        
-        // 2. Fetch Internal Transactions (Faucets often live here)
-        const internalUrl = `${apiBase}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+        // 1. Define the 3 endpoints
+        const endpoints = [
+            { type: 'Normal', url: `${apiBase}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}` },
+            { type: 'Internal', url: `${apiBase}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}` },
+            { type: 'Token',    url: `${apiBase}?module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}` }
+        ];
 
-        // Run both requests at the same time
-        const [normalRes, internalRes] = await Promise.all([
-            fetch(normalUrl).then(r => r.json()),
-            fetch(internalUrl).then(r => r.json())
-        ]);
+        // 2. Run all 3 requests in parallel
+        const results = await Promise.all(
+            endpoints.map(ep => 
+                fetch(ep.url)
+                .then(r => r.json())
+                .then(data => ({ type: ep.type, data: data }))
+            )
+        );
 
-        // 3. Combine the results
+        // 3. Merge valid results
         let allTxs = [];
-        if (normalRes.status === "1") allTxs = allTxs.concat(normalRes.result);
-        if (internalRes.status === "1") allTxs = allTxs.concat(internalRes.result);
+        results.forEach(res => {
+            console.log(`🔍 ${res.type} Results:`, res.data); // DEBUG LOG
+            
+            if (res.data.status === "1" && res.data.result.length > 0) {
+                // Label them so we know where they came from
+                const labeledTxs = res.data.result.map(tx => ({...tx, category: res.type}));
+                allTxs = allTxs.concat(labeledTxs);
+            } else if (res.data.message === "NOTOK") {
+                console.warn(`⚠️ API Error [${res.type}]: ${res.data.result}`);
+            }
+        });
 
         // 4. Sort by time (Newest first)
         allTxs.sort((a, b) => b.timeStamp - a.timeStamp);
 
+        // 5. Render
         if (allTxs.length > 0) {
-            list.innerHTML = allTxs.slice(0, 5).map(tx => {
+            list.innerHTML = allTxs.slice(0, 10).map(tx => {
                 const isSent = tx.from.toLowerCase() === address.toLowerCase();
-                // Internal txs don't have 'hash', they share the parent's hash
-                const hash = tx.hash || tx.transactionHash; 
+                const hash = tx.hash || tx.transactionHash; // Internal txs use 'transactionHash'
                 
+                // Determine symbol (ETH or Token Name)
+                let symbol = currentNetwork.symbol;
+                let amount = tx.value;
+                
+                // If it's a Token Transfer, use the Token Symbol and adjust decimals
+                if (tx.category === 'Token') {
+                    symbol = tx.tokenSymbol;
+                    amount = tx.value; // Note: In a real app, you'd need to divide by tx.tokenDecimal
+                }
+
                 return `
-                <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
-                    <span style="color: ${isSent ? '#d93025' : '#34a853'}">
-                        ${isSent ? '📤 Sent' : '📥 Received'} 
-                        ${tx.contractAddress ? '(Internal)' : ''}
-                    </span>
-                    <br><strong>${ethers.formatEther(tx.value)} ${currentNetwork.symbol}</strong>
-                    <br><small style="color:gray;">${new Date(tx.timeStamp * 1000).toLocaleString()}</small>
-                    <br><small><a href="${currentNetwork.explorer}/tx/${hash}" target="_blank">View on Explorer</a></small>
+                <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: bold; color: ${isSent ? '#d93025' : '#34a853'}">
+                            ${isSent ? '📤 Sent' : '📥 Received'}
+                        </span>
+                        <span style="font-size: 0.75rem; background: #f1f3f4; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">
+                            ${tx.category}
+                        </span>
+                        <div style="font-size: 0.75rem; color: #70757a; margin-top: 2px;">
+                            ${new Date(tx.timeStamp * 1000).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600;">
+                            ${tx.category === 'Token' ? 
+                              (Number(amount) / Math.pow(10, tx.tokenDecimal)).toFixed(2) : 
+                              parseFloat(ethers.formatEther(amount)).toFixed(4)} 
+                            ${symbol}
+                        </div>
+                        <a href="${currentNetwork.explorer}/tx/${hash}" target="_blank" style="font-size: 0.75rem; color: #1a73e8; text-decoration: none;">View &nearr;</a>
+                    </div>
                 </div>
             `}).join('');
         } else {
-            list.innerHTML = "<p style='color:gray;'>No activity found.</p>";
+            list.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #888;">
+                    <p style="margin:0">No activity found.</p>
+                    <small style="font-size:0.7em">(Checked Normal, Internal, and Token Txs)</small>
+                </div>`;
         }
     } catch (err) {
-        console.error(err);
-        list.innerHTML = "Error loading history (Check Console)";
+        console.error("History Error:", err);
+        list.innerHTML = `<div style="color: #d93025; padding: 10px;">Error loading history. Check Console.</div>`;
     }
 }
