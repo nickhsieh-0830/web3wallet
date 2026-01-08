@@ -161,16 +161,16 @@ async function fetchHistory(address){
     const url = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
     list.innerHTML="Loading history...";
     try{
-        const respose=await fetch(url);
+        const response=await fetch(url);
         const data=await response.json();
         if (data.status==="1"){
             list.innerHTML=data.result.slice(0,5).map(tx =>`
                 <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
                     <strong>${tx.from.toLowerCase()===address.toLowerCase()? '📤 Sent' : '📥 Received'}</strong>
                     <br>Amonut: ${ethers.formatEther(tx.value)} ETH
-                    <br><small><a gref="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">View Transactions</a></small>
+                    <br><small><a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">View Transactions</a></small>
                 </div>
             `).join('');
         } else {list.innerHTML="No transactions found.";}        
-    } catch(err){linst.innerHTML="Error loading history.";}
+    } catch(err){list.innerHTML="Error loading history.";}
 }
