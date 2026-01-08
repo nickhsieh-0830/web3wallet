@@ -1,3 +1,19 @@
+// Network status check
+async function updateNetworkStatus(){
+    const light=document.getElementById("statusLight");
+    const text=document.getElementById("statusText");
+    try {
+        const blockNum=await provider.getBlockNumber();
+        light.style.background="#34a853";//Green
+        text.innerText=`Connected (Block: ${blockNum})`;
+    } catch (err) {
+        light.style.background = "#d93025";//Red
+        text.innerText="Node Offline";
+    }
+}
+updateNetworkStatus();// Initial check
+setInterval(updateNetworkStatus,10000); //check network status every 10 secs.
+
 // Once page load, check if saved address exist locally
 window.addEventListener('load',() => {
     const savedAddress=localStorage.getItem('userAddress');
