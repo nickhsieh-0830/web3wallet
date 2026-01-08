@@ -3,90 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web3 Wallet</title>
-    
+    <title>Modular Web3 Wallet</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; color: #333; padding: 20px; }
         .wallet-container { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        h2 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
-        section { background: #ffffff; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eef2f6; }
-        h4 { margin: 0 0 12px 0; color: #70757a; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dcdfe6; border-radius: 10px; box-sizing: border-box; font-family: monospace; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1a73e8; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        button:hover { background: #1557b0; transform: translateY(-1px); }
+        h4 { margin: 0 0 12px 0; color: #70757a; font-size: 0.8rem; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dcdfe6; border-radius: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1a73e8; color: white; font-weight: 600; cursor: pointer; margin-top: 5px; }
+        button:hover { background: #1557b0; }
         .secondary-btn { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
-        .send-btn { background: #34a853; }
-        .copy-badge { float: right; font-size: 0.7rem; color: #1a73e8; cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; width: auto; }
-        code { display: block; background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 0.8rem; word-break: break-all; color: #444; margin-top: 5px; }
-        .reveal-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.85rem; color: #5f6368; }
-        .status-msg { font-size: 0.8rem; margin-top: 8px; font-weight: 500; min-height: 1.2em; }
     </style>
 </head>
 <body>
 
 <div class="wallet-container">
-    <h2>My Web3 Wallet 🦊</h2>
+    <h2>Web3 Wallet (Modular) 🧩</h2>
 
-    <section>
-        <h4>Network Selection</h4>
+    <section style="background: #fff; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px;">
+        <h4>Settings</h4>
+        <label style="font-size:0.75rem;">Network:</label>
         <select id="networkSelect">
-            <option value="sepolia">🌐 Sepolia Testnet</option>
-            <option value="mainnet">💰 Ethereum Mainnet</option>
+            <option value="sepolia">Sepolia Testnet</option>
+            <option value="mainnet">Ethereum Mainnet</option>
         </select>
+        
+        <label style="font-size:0.75rem;">Asset to Manage:</label>
+        <select id="assetSelect">
+            </select>
     </section>
 
-    <section>
-        <h4>Portfolio</h4>
-        <input type="text" id="addressInput" placeholder="Enter 0x address...">
+    <section style="margin-bottom: 20px;">
+        <h4>Balance Check</h4>
+        <input type="text" id="addressInput" placeholder="Address...">
         <button id="checkBtn">Check Balance</button>
-        <p style="margin-top:12px; font-size: 0.95rem;">Balance: <strong id="balanceText">---</strong></p>
+        <p>Result: <strong id="balanceText">---</strong></p>
     </section>
 
-    <section>
-        <h4>Create Account</h4>
-        <button id="genBtn" class="secondary-btn">Generate New Seed Phrase</button>
-        <div id="walletInfo" style="display: none; margin-top:15px;">
-            <button id="copyBtn" class="copy-badge">Copy Phrase</button>
-            <small style="color: #d93025; font-weight: bold;">Secret Phrase:</small>
+    <section style="margin-bottom: 20px;">
+        <h4>Wallet Management</h4>
+        <button id="genBtn" class="secondary-btn">New Wallet</button>
+        <div id="walletInfo" style="display:none; overflow-wrap: break-word;">
             <input type="password" id="phraseText" readonly>
-            <div class="reveal-row">
-                <input type="checkbox" id="toggleReveal" style="width: auto; margin: 0;"> 
-                <label for="toggleReveal" style="cursor:pointer">Show Words</label>
-            </div>
-            <p style="font-size: 0.75rem; margin-top:12px; color: #70757a;">Public Address:</p>
             <code id="addressText"></code>
         </div>
-    </section>
 
-    <section>
-        <h4>Access Wallet</h4>
-        <input type="text" id="recoverInput" placeholder="Paste 12 words here...">
-        <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
-        <p id="recoverStatus" class="status-msg"></p>
-        <div id="recoveredInfo" style="display: none; margin-top:12px;">
-            <p style="font-size: 0.75rem; color: #70757a;">Active Address:</p>
-            <code id="recoveredAddress"></code>
+        <div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+            <input type="text" id="recoverInput" placeholder="Enter Seed Phrase...">
+            <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
+            <p id="recoverStatus"></p>
+            <div id="recoveredInfo" style="display:none">
+                Active: <code id="recoveredAddress"></code>
+            </div>
         </div>
     </section>
 
     <section>
-        <h4>Transfer ETH</h4>
-        <input type="text" id="sendTo" placeholder="Recipient 0x address...">
-        <input type="number" id="sendAmount" placeholder="Amount" step="0.001">
-        <button id="sendBtn" class="send-btn">Sign & Send</button>
-        <p id="txStatus" class="status-msg" style="word-break: break-all;"></p>
+        <h4>Send Crypto</h4>
+        <input type="text" id="sendTo" placeholder="Recipient Address...">
+        <input type="number" id="sendAmount" placeholder="Amount">
+        <button id="sendBtn" style="background: #34a853;">Sign & Send</button>
+        <p id="txStatus" style="font-size:0.8rem; margin-top:10px;"></p>
     </section>
-
-    <div style="text-align: center; margin-top: 20px;">
-        <button id="clearDataBtn" class="secondary-btn" style="width: auto; padding: 5px 15px; font-size: 0.75rem; background: #fff; color: #d93025; border: 1px solid #d93025;">
-            Clear Saved Data & Logout
-        </button>
-    </div>
 </div>
 
-<script src="wallet.js"></script>
-
-</body>
+<script src="config.js"></script>    <script src="services.js"></script>  <script src="app.js"></script>       </body>
 </html>
