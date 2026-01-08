@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:,">
     <title>My Web3 Wallet</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
@@ -14,7 +13,7 @@
         h2 { text-align: center; color: #1a73e8; margin-bottom: 30px; }
         section { background: #ffffff; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eef2f6; }
         h4 { margin: 0 0 12px 0; color: #70757a; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dcdfe6; border-radius: 10px; box-sizing: border-box; font-family: monospace; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dcdfe6; border-radius: 10px; box-sizing: border-box; font-family: monospace; }
         button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1a73e8; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         button:hover { background: #1557b0; transform: translateY(-1px); }
         .secondary-btn { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
@@ -28,28 +27,21 @@
 <body>
 
 <div class="wallet-container">
-    <h2>My Web3 Wallet</h2>
+    <h2>My Web3 Wallet 🦊</h2>
 
-    <section style="border-bottom: 2px solid #eee; margin-bottom: 20px;">
-        <h4>Network Settings</h4>
-        <select id="networkSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #1a73e8; font-weight: bold;">
-            <option value="https://ethereum-sepolia-rpc.publicnode.com">🌐 Sepolia Testnet (Play Money)</option>
-            <option value="https://ethereum-rpc.publicnode.com">💰 Ethereum Mainnet (REAL MONEY)</option>
+    <section>
+        <h4>Network Selection</h4>
+        <select id="networkSelect">
+            <option value="sepolia">🌐 Sepolia Testnet</option>
+            <option value="mainnet">💰 Ethereum Mainnet</option>
         </select>
-        <p id="networkWarning" style="font-size: 0.7rem; color; #d93025; margin-top: 5px; display: none;">
-            ⚠️ WARNING: You are on Mainnet. Transactions cost real money.
-        </p>
-        <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
-            <div id="statusLight" stype="width: 10px; height: 10px; background: #bbb; border-radius: 50%;"></div>
-            <small id="statusText" style="color: #666;">Connecting to Node...</small>
-        </div>
     </section>
 
     <section>
-        <h4>Portfolio (Sepolia Testnet)</h4>
+        <h4>Portfolio</h4>
         <input type="text" id="addressInput" placeholder="Enter 0x address...">
         <button id="checkBtn">Check Balance</button>
-        <p style="margin-top:12px; font-size: 0.95rem;">Balance: <strong id="balanceText">0.00</strong> ETH</p>
+        <p style="margin-top:12px; font-size: 0.95rem;">Balance: <strong id="balanceText">---</strong></p>
     </section>
 
     <section>
@@ -87,19 +79,13 @@
         <p id="txStatus" class="status-msg" style="word-break: break-all;"></p>
     </section>
 
-    <section>
-        <h4>Recent Activity</h4>
-        <div id="historyList" style="max-height: 200px; overflow-y: auto; font-size: 0.8rem;">
-            <p style="color: gray;">No transactions found or address not set.</p>
-        </div>
-    </section>
-    
+    <div style="text-align: center; margin-top: 20px;">
+        <button id="clearDataBtn" class="secondary-btn" style="width: auto; padding: 5px 15px; font-size: 0.75rem; background: #fff; color: #d93025; border: 1px solid #d93025;">
+            Clear Saved Data & Logout
+        </button>
+    </div>
 </div>
-<div style="text-align: center; margin-top: 20px;">
-    <button id="clearDataBtn" class="secondary-btn" style="width: auto; padding: 5px 15px; font-size: 0.75rem; background: #fff; color: #d93025; border: 1px solid #d93025;">
-        Clear Saved Data & Logout
-    </button>
-</div>
+
 <script src="wallet.js"></script>
 
 </body>
