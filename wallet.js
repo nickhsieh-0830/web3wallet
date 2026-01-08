@@ -156,7 +156,7 @@ document.getElementById('clearDataBtn').addEventListener('click',() => {
 //checkHistory
 async function fetchHistory(address){
     const list=document.getElementById('historyList');
-    const apiKey='YOUR_ETHERSCAN_API_KEY'; 
+    const apiKey='F1K8PWJSKMBM7J4QEE97WXZTEA95WSXQFW'; 
     // Sepolia API URL
     const url = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
     list.innerHTML="Loading history...";
