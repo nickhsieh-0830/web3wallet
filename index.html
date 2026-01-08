@@ -28,7 +28,7 @@
 <body>
 
 <div class="wallet-container">
-    <h2>My Web3 Wallet 🦊</h2>
+    <h2>My Web3 Wallet</h2>
 
     <section style="border-bottom: 2px solid #eee; margin-bottom: 20px;">
         <h4>Network Settings</h4>
@@ -39,6 +39,10 @@
         <p id="networkWarning" style="font-size: 0.7rem; color; #d93025; margin-top: 5px; display: none;">
             ⚠️ WARNING: You are on Mainnet. Transactions cost real money.
         </p>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+            <div id="statusLight" stype="width: 10px; height: 10px; background: #bbb; border-radius: 50%;"></div>
+            <small id="statusText" style="color: #666;">Connecting to Node...</small>
+        </div>
     </section>
 
     <section>
