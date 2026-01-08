@@ -72,6 +72,7 @@ document.getElementById('checkBtn').addEventListener('click', async () => {
     } catch (err) {
         balanceText.innerText = "Error";
     }
+    fetchHistory(address);
 });
 
 // --- LOGIC: GENERATE ---
