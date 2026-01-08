@@ -170,32 +170,54 @@ document.getElementById('clearDataBtn').addEventListener('click',() => {
 //checkHistory
 async function fetchHistory(address) {
     const list = document.getElementById('historyList');
-    // Use the API URL from the currently selected network
     const apiBase = currentNetwork.explorerApi;
-    const apiKey = 'YOUR_ETHERSCAN_API_KEY'; 
-
-    const url = `${apiBase}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+    const apiKey = 'YOUR_ETHERSCAN_API_KEY'; // ⚠️ Make sure this is real!
 
     list.innerHTML = "Loading history...";
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
+        // 1. Fetch Normal Transactions
+        const normalUrl = `${apiBase}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+        
+        // 2. Fetch Internal Transactions (Faucets often live here)
+        const internalUrl = `${apiBase}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
 
-        if (data.status === "1" && data.result.length > 0) {
-            list.innerHTML = data.result.slice(0, 5).map(tx => `
+        // Run both requests at the same time
+        const [normalRes, internalRes] = await Promise.all([
+            fetch(normalUrl).then(r => r.json()),
+            fetch(internalUrl).then(r => r.json())
+        ]);
+
+        // 3. Combine the results
+        let allTxs = [];
+        if (normalRes.status === "1") allTxs = allTxs.concat(normalRes.result);
+        if (internalRes.status === "1") allTxs = allTxs.concat(internalRes.result);
+
+        // 4. Sort by time (Newest first)
+        allTxs.sort((a, b) => b.timeStamp - a.timeStamp);
+
+        if (allTxs.length > 0) {
+            list.innerHTML = allTxs.slice(0, 5).map(tx => {
+                const isSent = tx.from.toLowerCase() === address.toLowerCase();
+                // Internal txs don't have 'hash', they share the parent's hash
+                const hash = tx.hash || tx.transactionHash; 
+                
+                return `
                 <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
-                    <span style="color: ${tx.from.toLowerCase() === address.toLowerCase() ? '#d93025' : '#34a853'}">
-                        ${tx.from.toLowerCase() === address.toLowerCase() ? '📤 Sent' : '📥 Received'}
+                    <span style="color: ${isSent ? '#d93025' : '#34a853'}">
+                        ${isSent ? '📤 Sent' : '📥 Received'} 
+                        ${tx.contractAddress ? '(Internal)' : ''}
                     </span>
                     <br><strong>${ethers.formatEther(tx.value)} ${currentNetwork.symbol}</strong>
                     <br><small style="color:gray;">${new Date(tx.timeStamp * 1000).toLocaleString()}</small>
+                    <br><small><a href="${currentNetwork.explorer}/tx/${hash}" target="_blank">View on Explorer</a></small>
                 </div>
-            `).join('');
+            `}).join('');
         } else {
-            list.innerHTML = "<p style='color:gray;'>No activity found on this network.</p>";
+            list.innerHTML = "<p style='color:gray;'>No activity found.</p>";
         }
     } catch (err) {
-        list.innerHTML = "Error loading history.";
+        console.error(err);
+        list.innerHTML = "Error loading history (Check Console)";
     }
 }
