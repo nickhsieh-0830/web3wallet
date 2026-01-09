@@ -1,15 +1,15 @@
-// app.js
+// ==========================================
+// 1. STATE & STARTUP
+// ==========================================
+let selectedAsset = null;
+let html5QrCode = null; // Global scanner instance
 
-// 1. State
-let selectedAsset = null; // Will store the currently selected asset object
-
-// 2. Startup Logic
 window.addEventListener('load', () => {
-    // Initialize Network (Default to Sepolia)
+    // Initialize default network
     walletService.initProvider('sepolia');
     updateAssetDropdown('sepolia');
     
-    // Check local storage
+    // Check local storage for existing login
     const savedAddress = localStorage.getItem('userAddress');
     if (savedAddress) {
         document.getElementById('addressInput').value = savedAddress;
@@ -18,49 +18,49 @@ window.addEventListener('load', () => {
     }
 });
 
-// 3. Network Switcher Logic
+// ==========================================
+// 2. NETWORK & ASSET MANAGEMENT
+// ==========================================
+
+// Handle Network Switching
 document.getElementById('networkSelect').addEventListener('change', (e) => {
     const netKey = e.target.value;
-    
-    // Update Service
     walletService.initProvider(netKey);
-    
-    // Update UI (Asset List)
     updateAssetDropdown(netKey);
-    
-    // Reset Display
     document.getElementById('balanceText').innerText = "---";
 });
 
-// Helper: Populate Asset Dropdown dynamically
-function updateAssetDropdown(networkKey) {
-    const assetSelect = document.getElementById('assetSelect');
-    const assets = CONFIG.assets[networkKey];
-    
-    assetSelect.innerHTML = ""; // Clear old options
-    
-    assets.forEach((asset, index) => {
-        const option = document.createElement("option");
-        option.value = index; // We use the index to find the object later
-        option.innerText = `${asset.symbol} (${asset.name})`;
-        assetSelect.appendChild(option);
-    });
-
-    // Select first asset by default
-    selectedAsset = assets[0];
-}
-
-// Update 'selectedAsset' when user changes dropdown
+// Handle Asset Switching
 document.getElementById('assetSelect').addEventListener('change', (e) => {
     const netKey = document.getElementById('networkSelect').value;
     const index = e.target.value;
     selectedAsset = CONFIG.assets[netKey][index];
-    
-    // Reset balance text to prompt a re-check
     document.getElementById('balanceText').innerText = "---";
 });
 
-// 4. Check Balance Logic
+// Helper: Populate Dropdown
+function updateAssetDropdown(networkKey) {
+    const assetSelect = document.getElementById('assetSelect');
+    const assets = CONFIG.assets[networkKey];
+    
+    assetSelect.innerHTML = ""; 
+    
+    assets.forEach((asset, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.innerText = `${asset.symbol} (${asset.name})`;
+        assetSelect.appendChild(option);
+    });
+
+    // Default to first asset
+    selectedAsset = assets[0];
+}
+
+// ==========================================
+// 3. CORE WALLET FUNCTIONS
+// ==========================================
+
+// Check Balance
 document.getElementById('checkBtn').addEventListener('click', async () => {
     const address = document.getElementById('addressInput').value.trim();
     const balanceText = document.getElementById('balanceText');
@@ -70,7 +70,6 @@ document.getElementById('checkBtn').addEventListener('click', async () => {
     balanceText.innerText = "Syncing...";
 
     try {
-        // Use the Service to get balance (Native OR Token)
         const balance = await walletService.getBalance(address, selectedAsset);
         balanceText.innerText = `${balance} ${selectedAsset.symbol}`;
     } catch (err) {
@@ -79,7 +78,7 @@ document.getElementById('checkBtn').addEventListener('click', async () => {
     }
 });
 
-// 5. Send Logic
+// Send Transaction
 document.getElementById('sendBtn').addEventListener('click', async () => {
     const to = document.getElementById('sendTo').value.trim();
     const amount = document.getElementById('sendAmount').value;
@@ -87,19 +86,15 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
                    document.getElementById('phraseText').value;
     const status = document.getElementById('txStatus');
 
-    if (!phrase) return alert("Load wallet first!");
+    if (!phrase) return alert("Please load your wallet phrase first!");
 
     status.style.color = "#1a73e8";
     status.innerText = "Initiating Transaction...";
 
     try {
-        // 1. Connect the wallet
         walletService.connectWallet(phrase);
-
-        // 2. Send (Service handles the complex math)
         const tx = await walletService.sendTransaction(to, amount, selectedAsset);
 
-        // 3. Update UI
         const explorer = walletService.currentNetwork.explorer;
         status.innerHTML = `Hash: <a href="${explorer}/tx/${tx.hash}" target="_blank">View Transaction</a>`;
         
@@ -114,7 +109,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     }
 });
 
-// 6. Wallet Generation & Recovery (Standard UI logic)
+// Wallet Generation
 document.getElementById('genBtn').addEventListener('click', () => {
     const w = ethers.Wallet.createRandom();
     document.getElementById('walletInfo').style.display = 'block';
@@ -123,6 +118,7 @@ document.getElementById('genBtn').addEventListener('click', () => {
     localStorage.setItem('userAddress', w.address);
 });
 
+// Wallet Recovery
 document.getElementById('recoverBtn').addEventListener('click', () => {
     const p = document.getElementById('recoverInput').value.trim();
     try {
@@ -131,97 +127,91 @@ document.getElementById('recoverBtn').addEventListener('click', () => {
         document.getElementById('recoveredAddress').innerText = w.address;
         localStorage.setItem('userAddress', w.address);
         document.getElementById('recoverStatus').innerText = "✅ Loaded!";
+        document.getElementById('recoverStatus').style.color = "#34a853";
     } catch (e) {
         document.getElementById('recoverStatus').innerText = "❌ Invalid Phrase";
+        document.getElementById('recoverStatus').style.color = "#d93025";
     }
 });
 
 // ==========================================
-// QR CODE LOGIC
+// 4. QR CODE LOGIC
 // ==========================================
-// --- 1. RECEIVE (GENERATE) ---
-document.getElementById('receiveBtn').addEventListener('click', () => {
-    const address = localStorage.getItem('userAddress');
-    if (!address) return alert("Please generate or load a wallet first!");
 
-    // Show Modal
+// --- RECEIVE (SHOW QR) ---
+document.getElementById('receiveBtn').addEventListener('click', () => {
+    // Try to get address from the input field first, fallback to memory
+    const inputVal = document.getElementById('addressInput').value.trim();
+    const memoryVal = localStorage.getItem('userAddress');
+    const address = inputVal || memoryVal;
+
+    if (!address || !ethers.isAddress(address)) return alert("No valid address found to show!");
+
     document.getElementById('qrModal').style.display = 'flex';
     document.getElementById('qrAddressText').innerText = address;
-    
-    // Clear previous QR if any
-    document.getElementById('qrcode').innerHTML = "";
+    document.getElementById('qrcode').innerHTML = ""; // Clear previous
 
-    // Generate New QR
     new QRCode(document.getElementById("qrcode"), {
         text: address,
-        width: 200,
-        height: 200,
+        width: 180,
+        height: 180,
         colorDark : "#000000",
         colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H // High error correction
+        correctLevel : QRCode.CorrectLevel.H
     });
 });
-// --- 2. SEND (SCANNER) ---
-let html5QrCode; // Global scanner instance
 
+// --- SEND (SCANNER) ---
 document.getElementById('scanBtn').addEventListener('click', () => {
-    // Show Modal
     document.getElementById('scanModal').style.display = 'flex';
-    
-    // Initialize Scanner
+    document.getElementById('scanStatus').innerText = "Requesting Camera Access...";
+
     html5QrCode = new Html5Qrcode("reader");
     
     const config = { fps: 10, qrbox: { width: 250, height: 250 } };
     
     html5QrCode.start(
-        { facingMode: "environment" }, // Use Back Camera
+        { facingMode: "environment" }, 
         config,
-        onScanSuccess,
-        onScanFailure
+        (decodedText) => {
+            // Regex to find ETH address (0x + 40 hex chars) inside any text
+            const ethRegex = /(0x[a-fA-F0-9]{40})/i;
+            const match = decodedText.match(ethRegex);
+
+            if (match) {
+                const address = match[0];
+                document.getElementById('sendTo').value = address;
+                stopScanner();
+                // Optional: visual feedback
+                document.getElementById('scanBtn').innerText = "✅";
+                setTimeout(() => document.getElementById('scanBtn').innerText = "📷", 2000);
+            }
+        },
+        (error) => {
+            // Scanning... ignore errors until match found
+        }
     ).catch(err => {
-        document.getElementById('scanStatus').innerText = "Error starting camera: " + err;
+        document.getElementById('scanStatus').innerText = "Camera Error: " + err;
     });
 });
-function onScanSuccess(decodedText, decodedResult) {
-    // 1. Check if it looks like an Ethereum address
-    // Matches 0x followed by 40 hex characters
-    const ethRegex = /(0x[a-fA-F0-9]{40})/;
-    const match = decodedText.match(ethRegex);
 
-    if (match) {
-        // Success!
-        const address = match[0];
-        document.getElementById('sendTo').value = address;
-        
-        // Stop camera and close modal
-        stopScanner();
-        
-        // Visual feedback
-        alert("Address Found: " + address);
-    } else {
-        console.warn("QR code found, but not an ETH address:", decodedText);
-    }
-}
-
-function onScanFailure(error) {
-    // Often triggers when it sees a QR but can't read it yet. Ignore mostly.
-    // console.warn(`Code scan error = ${error}`);
-}
-// --- UTILITY: CLOSE MODALS ---
+// Global Close Functions (called by HTML buttons)
 window.closeModal = function(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
+
 window.stopScanner = function() {
     if (html5QrCode) {
         html5QrCode.stop().then(() => {
             document.getElementById('scanModal').style.display = 'none';
             html5QrCode.clear();
-        }).catch(err => console.error("Failed to stop scanner", err));
+        }).catch(err => console.error(err));
     } else {
         document.getElementById('scanModal').style.display = 'none';
     }
 }
-// Close modal if user clicks outside the box
+
+// Close modal when clicking outside content
 window.onclick = function(event) {
     if (event.target.className === 'modal') {
         event.target.style.display = "none";
