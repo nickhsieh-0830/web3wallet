@@ -1,13 +1,13 @@
-// ==========================================
-// 1. STATE & STARTUP
-// ==========================================
+// Global State
 let selectedAsset = null;
 let html5QrCode = null;
 
+// --- STARTUP ---
 window.addEventListener('load', () => {
-    walletService.initProvider('sepolia');
+    walletService.initProvider('sepolia'); // Default to Sepolia
     updateAssetDropdown('sepolia');
     
+    // Check Local Storage
     const savedAddress = localStorage.getItem('userAddress');
     if (savedAddress) {
         document.getElementById('addressInput').value = savedAddress;
@@ -16,9 +16,7 @@ window.addEventListener('load', () => {
     }
 });
 
-// ==========================================
-// 2. SETTINGS (NETWORK & ASSETS)
-// ==========================================
+// --- SETTINGS (Network & Asset) ---
 document.getElementById('networkSelect').addEventListener('change', (e) => {
     const netKey = e.target.value;
     walletService.initProvider(netKey);
@@ -34,35 +32,39 @@ document.getElementById('assetSelect').addEventListener('change', (e) => {
 });
 
 function updateAssetDropdown(networkKey) {
-    const assetSelect = document.getElementById('assetSelect');
+    const select = document.getElementById('assetSelect');
     const assets = CONFIG.assets[networkKey];
-    assetSelect.innerHTML = ""; 
+    select.innerHTML = "";
+    
     assets.forEach((asset, index) => {
         const option = document.createElement("option");
         option.value = index;
-        option.innerText = `${asset.symbol} (${asset.name})`;
-        assetSelect.appendChild(option);
+        option.innerText = `${asset.symbol}`;
+        select.appendChild(option);
     });
-    selectedAsset = assets[0];
+    selectedAsset = assets[0]; // Default to first asset
 }
 
-// ==========================================
-// 3. CORE FUNCTIONS (Balance, Send)
-// ==========================================
+// --- ACTIONS: CHECK BALANCE ---
 document.getElementById('checkBtn').addEventListener('click', async () => {
     const address = document.getElementById('addressInput').value.trim();
     const balanceText = document.getElementById('balanceText');
+    
     if (!ethers.isAddress(address)) return alert("Invalid Address");
+
     balanceText.innerText = "Syncing...";
     try {
         const balance = await walletService.getBalance(address, selectedAsset);
-        balanceText.innerText = `${balance} ${selectedAsset.symbol}`;
+        // Format to 4 decimal places for display
+        const displayBal = parseFloat(balance).toFixed(4);
+        balanceText.innerText = `${displayBal} ${selectedAsset.symbol}`;
     } catch (err) {
         console.error(err);
         balanceText.innerText = "Error";
     }
 });
 
+// --- ACTIONS: SEND ---
 document.getElementById('sendBtn').addEventListener('click', async () => {
     const to = document.getElementById('sendTo').value.trim();
     const amount = document.getElementById('sendAmount').value;
@@ -73,33 +75,33 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     if (!phrase) return alert("Please load your wallet phrase first!");
 
     status.style.color = "#1a73e8";
-    status.innerText = "Initiating Transaction...";
+    status.innerText = "Processing...";
 
     try {
         walletService.connectWallet(phrase);
         const tx = await walletService.sendTransaction(to, amount, selectedAsset);
+        
         const explorer = walletService.currentNetwork.explorer;
-        status.innerHTML = `Hash: <a href="${explorer}/tx/${tx.hash}" target="_blank">View Transaction</a>`;
+        status.innerHTML = `Hash: <a href="${explorer}/tx/${tx.hash}" target="_blank">View</a>`;
+        
         await tx.wait();
-        status.innerHTML += "<br>✅ Confirmed!";
+        status.innerHTML += " ✅ Confirmed!";
         status.style.color = "#34a853";
     } catch (err) {
         console.error(err);
         status.style.color = "#d93025";
-        status.innerText = "Failed: " + (err.shortMessage || err.message);
+        status.innerText = "Failed: " + (err.shortMessage || "Error");
     }
 });
 
-// ==========================================
-// 4. WALLET MANAGEMENT (FIXED)
-// ==========================================
+// --- WALLET MANAGEMENT ---
 document.getElementById('genBtn').addEventListener('click', () => {
     const w = ethers.Wallet.createRandom();
     document.getElementById('walletInfo').style.display = 'block';
     document.getElementById('phraseText').value = w.mnemonic.phrase;
     document.getElementById('addressText').innerText = w.address;
     
-    // Reset Reveal Checkbox
+    // Reset Privacy UI
     document.getElementById('phraseText').type = "password";
     document.getElementById('toggleReveal').checked = false;
     
@@ -113,99 +115,60 @@ document.getElementById('recoverBtn').addEventListener('click', () => {
         document.getElementById('recoveredInfo').style.display = 'block';
         document.getElementById('recoveredAddress').innerText = w.address;
         localStorage.setItem('userAddress', w.address);
-        document.getElementById('recoverStatus').innerText = "✅ Loaded!";
+        document.getElementById('recoverStatus').innerText = "✅ Loaded";
         document.getElementById('recoverStatus').style.color = "#34a853";
     } catch (e) {
-        document.getElementById('recoverStatus').innerText = "❌ Invalid Phrase";
+        document.getElementById('recoverStatus').innerText = "❌ Invalid";
         document.getElementById('recoverStatus').style.color = "#d93025";
     }
 });
 
-// --- RESTORED LOGIC FOR COPY & REVEAL ---
-const toggleReveal = document.getElementById('toggleReveal');
-const phraseInput = document.getElementById('phraseText');
-const copyBtn = document.getElementById('copyBtn');
+// Copy & Reveal Logic
+document.getElementById('toggleReveal').addEventListener('change', (e) => {
+    document.getElementById('phraseText').type = e.target.checked ? 'text' : 'password';
+});
 
-if (toggleReveal) {
-    toggleReveal.addEventListener('change', () => {
-        phraseInput.type = toggleReveal.checked ? 'text' : 'password';
-    });
-}
+document.getElementById('copyBtn').addEventListener('click', () => {
+    const phrase = document.getElementById('phraseText').value;
+    if (!phrase) return;
+    navigator.clipboard.writeText(phrase);
+    alert("Copied to clipboard!");
+});
 
-if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-        if (!phraseInput.value) return;
-        navigator.clipboard.writeText(phraseInput.value).then(() => {
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = "Copied!";
-            setTimeout(() => copyBtn.innerText = originalText, 2000);
-        });
-    });
-}
-
-// ==========================================
-// 5. QR CODE LOGIC
-// ==========================================
+// --- QR CODES ---
 document.getElementById('receiveBtn').addEventListener('click', () => {
-    const inputVal = document.getElementById('addressInput').value.trim();
-    const memoryVal = localStorage.getItem('userAddress');
-    const address = inputVal || memoryVal;
-
-    if (!address || !ethers.isAddress(address)) return alert("No valid address found!");
-
+    const address = document.getElementById('addressInput').value || localStorage.getItem('userAddress');
+    if (!address) return alert("No address found.");
+    
     document.getElementById('qrModal').style.display = 'flex';
+    document.getElementById('qrcode').innerHTML = "";
     document.getElementById('qrAddressText').innerText = address;
-    document.getElementById('qrcode').innerHTML = ""; 
-
+    
     new QRCode(document.getElementById("qrcode"), {
-        text: address,
-        width: 180, height: 180,
-        correctLevel : QRCode.CorrectLevel.H
+        text: address, width: 180, height: 180, correctLevel : QRCode.CorrectLevel.H
     });
 });
 
 document.getElementById('scanBtn').addEventListener('click', () => {
     document.getElementById('scanModal').style.display = 'flex';
-    document.getElementById('scanStatus').innerText = "Requesting Camera...";
-
     html5QrCode = new Html5Qrcode("reader");
-    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-    
-    html5QrCode.start(
-        { facingMode: "environment" }, 
-        config,
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
         (decodedText) => {
-            const ethRegex = /(0x[a-fA-F0-9]{40})/i;
-            const match = decodedText.match(ethRegex);
+            const match = decodedText.match(/(0x[a-fA-F0-9]{40})/i);
             if (match) {
                 document.getElementById('sendTo').value = match[0];
                 stopScanner();
             }
         },
-        (error) => {}
-    ).catch(err => {
-        document.getElementById('scanStatus').innerText = "Error: " + err;
-    });
+        () => {}
+    );
 });
 
-window.closeModal = function(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-window.stopScanner = function() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById('scanModal').style.display = 'none';
-            html5QrCode.clear();
-        }).catch(err => console.error(err));
-    } else {
+window.stopScanner = () => {
+    if (html5QrCode) html5QrCode.stop().then(() => {
         document.getElementById('scanModal').style.display = 'none';
-    }
-}
-
-window.onclick = function(event) {
-    if (event.target.className === 'modal') {
-        event.target.style.display = "none";
-        if (event.target.id === 'scanModal') stopScanner();
-    }
-}
+        html5QrCode.clear();
+    });
+};
+window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+window.onclick = (e) => { if(e.target.className === 'modal') { e.target.style.display='none'; if(e.target.id==='scanModal') stopScanner(); }};
