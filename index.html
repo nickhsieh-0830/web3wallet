@@ -21,8 +21,7 @@
         
         /* QR MODAL STYLES */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85); z-index: 1000;
             justify-content: center; align-items: center;
         }
@@ -31,9 +30,8 @@
             text-align: center; max-width: 350px; width: 90%; position: relative;
         }
         .close-btn {
-            position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; color: #aaa; font-weight: bold;
+            position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; color: #aaa;
         }
-        .close-btn:hover { color: #333; }
         #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 10px; }
     </style>
 </head>
@@ -44,15 +42,19 @@
 
     <section style="background: #fff; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px;">
         <h4>Settings</h4>
-        <label style="font-size:0.75rem;">Network:</label>
-        <select id="networkSelect">
-            <option value="sepolia">Sepolia Testnet</option>
-            <option value="mainnet">Ethereum Mainnet</option>
-        </select>
-        
-        <label style="font-size:0.75rem;">Asset:</label>
-        <select id="assetSelect">
-            </select>
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1">
+                <label style="font-size:0.75rem;">Network:</label>
+                <select id="networkSelect">
+                    <option value="sepolia">Sepolia Testnet</option>
+                    <option value="mainnet">Ethereum Mainnet</option>
+                </select>
+            </div>
+            <div style="flex:1">
+                <label style="font-size:0.75rem;">Asset:</label>
+                <select id="assetSelect"></select>
+            </div>
+        </div>
     </section>
 
     <section style="margin-bottom: 20px;">
@@ -68,13 +70,26 @@
     <section style="margin-bottom: 20px;">
         <h4>Wallet Management</h4>
         <button id="genBtn" class="secondary-btn">New Wallet</button>
-        <div id="walletInfo" style="display:none; overflow-wrap: break-word;">
-            <input type="password" id="phraseText" readonly>
+        
+        <div id="walletInfo" style="display:none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #d93025;">Secret Phrase:</span>
+                <button id="copyBtn" style="background:none; border:none; color:#1a73e8; text-decoration:underline; cursor:pointer; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+            </div>
+            
+            <input type="password" id="phraseText" readonly style="background: #f9f9f9; color: #555;">
+            
+            <div style="display: flex; align-items: center; gap: 5px; font-size: 0.8rem; margin-bottom: 15px;">
+                <input type="checkbox" id="toggleReveal" style="width: auto; margin: 0;"> 
+                <label for="toggleReveal" style="cursor:pointer; color: #555;">Show Words</label>
+            </div>
+
+            <span style="font-size: 0.75rem; color: #70757a;">Public Address:</span>
             <code id="addressText"></code>
         </div>
 
         <div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
-            <input type="text" id="recoverInput" placeholder="Enter Seed Phrase...">
+            <input type="text" id="recoverInput" placeholder="Enter Seed Phrase to Load...">
             <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
             <p id="recoverStatus" style="font-size: 0.8rem; margin-top: 5px;"></p>
             <div id="recoveredInfo" style="display:none; font-size: 0.8rem;">
@@ -91,7 +106,7 @@
         </div>
         <input type="number" id="sendAmount" placeholder="Amount">
         <button id="sendBtn" style="background: #34a853;">Sign & Send</button>
-        <p id="txStatus" style="font-size:0.8rem; margin-top:10px;"></p>
+        <p id="txStatus" style="font-size:0.8rem; margin-top:10px; word-break: break-all;"></p>
     </section>
 </div>
 
@@ -109,9 +124,13 @@
         <span class="close-btn" onclick="stopScanner()">&times;</span>
         <h3>Scan QR Code</h3>
         <div id="reader"></div>
-        <p id="scanStatus" style="font-size: 0.8rem; color: #666; margin-top: 10px;">Waiting for camera permission...</p>
+        <p id="scanStatus" style="font-size: 0.8rem; color: #666; margin-top: 10px;">Waiting for camera...</p>
     </div>
 </div>
 
-<script src="config.js"></script>    <script src="services.js"></script>  <script src="app.js"></script>       </body>
+<script src="config.js"></script>
+<script src="services.js"></script>
+<script src="app.js"></script>
+
+</body>
 </html>
