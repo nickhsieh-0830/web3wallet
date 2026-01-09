@@ -135,3 +135,96 @@ document.getElementById('recoverBtn').addEventListener('click', () => {
         document.getElementById('recoverStatus').innerText = "❌ Invalid Phrase";
     }
 });
+
+// ==========================================
+// QR CODE LOGIC
+// ==========================================
+// --- 1. RECEIVE (GENERATE) ---
+document.getElementById('receiveBtn').addEventListener('click', () => {
+    const address = localStorage.getItem('userAddress');
+    if (!address) return alert("Please generate or load a wallet first!");
+
+    // Show Modal
+    document.getElementById('qrModal').style.display = 'flex';
+    document.getElementById('qrAddressText').innerText = address;
+    
+    // Clear previous QR if any
+    document.getElementById('qrcode').innerHTML = "";
+
+    // Generate New QR
+    new QRCode(document.getElementById("qrcode"), {
+        text: address,
+        width: 200,
+        height: 200,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H // High error correction
+    });
+});
+// --- 2. SEND (SCANNER) ---
+let html5QrCode; // Global scanner instance
+
+document.getElementById('scanBtn').addEventListener('click', () => {
+    // Show Modal
+    document.getElementById('scanModal').style.display = 'flex';
+    
+    // Initialize Scanner
+    html5QrCode = new Html5Qrcode("reader");
+    
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    
+    html5QrCode.start(
+        { facingMode: "environment" }, // Use Back Camera
+        config,
+        onScanSuccess,
+        onScanFailure
+    ).catch(err => {
+        document.getElementById('scanStatus').innerText = "Error starting camera: " + err;
+    });
+});
+function onScanSuccess(decodedText, decodedResult) {
+    // 1. Check if it looks like an Ethereum address
+    // Matches 0x followed by 40 hex characters
+    const ethRegex = /(0x[a-fA-F0-9]{40})/;
+    const match = decodedText.match(ethRegex);
+
+    if (match) {
+        // Success!
+        const address = match[0];
+        document.getElementById('sendTo').value = address;
+        
+        // Stop camera and close modal
+        stopScanner();
+        
+        // Visual feedback
+        alert("Address Found: " + address);
+    } else {
+        console.warn("QR code found, but not an ETH address:", decodedText);
+    }
+}
+
+function onScanFailure(error) {
+    // Often triggers when it sees a QR but can't read it yet. Ignore mostly.
+    // console.warn(`Code scan error = ${error}`);
+}
+// --- UTILITY: CLOSE MODALS ---
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+window.stopScanner = function() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('scanModal').style.display = 'none';
+            html5QrCode.clear();
+        }).catch(err => console.error("Failed to stop scanner", err));
+    } else {
+        document.getElementById('scanModal').style.display = 'none';
+    }
+}
+// Close modal if user clicks outside the box
+window.onclick = function(event) {
+    if (event.target.className === 'modal') {
+        event.target.style.display = "none";
+        if (event.target.id === 'scanModal') stopScanner();
+    }
+}
