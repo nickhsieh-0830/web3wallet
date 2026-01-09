@@ -1,5 +1,3 @@
-// services.js
-
 class WalletService {
     constructor() {
         this.provider = null;
@@ -7,61 +5,55 @@ class WalletService {
         this.currentNetwork = null;
     }
 
-    // Initialize the provider for a specific network
+    // 1. Initialize Network
     initProvider(networkKey) {
         this.currentNetwork = CONFIG.networks[networkKey];
         this.provider = new ethers.JsonRpcProvider(this.currentNetwork.rpc);
-        return this.provider;
     }
 
-    // Connect a wallet (Phrase -> Signer)
+    // 2. Connect Wallet (from Phrase)
     connectWallet(phrase) {
         if (!phrase) throw new Error("No phrase provided");
         const wallet = ethers.HDNodeWallet.fromPhrase(phrase);
         this.signer = wallet.connect(this.provider);
-        return this.signer;
+        return this.signer; // Return signer for UI to use address
     }
 
-    // GET BALANCE (Smart: Handles Native vs ERC20)
+    // 3. Get Balance (Handles both Native & Tokens)
     async getBalance(address, asset) {
         if (!this.provider) throw new Error("Provider not ready");
-
         let rawBalance;
 
         if (asset.type === "NATIVE") {
-            // Strategy A: Ask the node for ETH balance
             rawBalance = await this.provider.getBalance(address);
         } else {
-            // Strategy B: Ask the Smart Contract for Token balance
             const contract = new ethers.Contract(asset.address, ERC20_ABI, this.provider);
             rawBalance = await contract.balanceOf(address);
         }
 
-        // Format the human-readable number (Handle 18 vs 6 decimals!)
         return ethers.formatUnits(rawBalance, asset.decimals);
     }
 
-    // SEND ASSET (Smart: Handles Native vs ERC20)
+    // 4. Send Transaction (Handles both Native & Tokens)
     async sendTransaction(to, amount, asset) {
         if (!this.signer) throw new Error("Wallet not loaded");
 
+        // Convert human number (0.1) to blockchain number (100000...)
         const amountWei = ethers.parseUnits(amount.toString(), asset.decimals);
 
         if (asset.type === "NATIVE") {
-            // Send ETH
-            const tx = await this.signer.sendTransaction({
+            // Standard ETH Send
+            return await this.signer.sendTransaction({
                 to: to,
                 value: amountWei
             });
-            return tx;
         } else {
-            // Send Token
+            // ERC-20 Token Send
             const contract = new ethers.Contract(asset.address, ERC20_ABI, this.signer);
-            const tx = await contract.transfer(to, amountWei);
-            return tx;
+            return await contract.transfer(to, amountWei);
         }
     }
 }
 
-// Create a global instance to use in app.js
+// Create a global instance
 const walletService = new WalletService();
