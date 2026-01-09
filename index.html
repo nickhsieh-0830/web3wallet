@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modular Web3 Wallet</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <style>
+        /* BASE STYLES */
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; color: #333; padding: 20px; }
         .wallet-container { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         h4 { margin: 0 0 12px 0; color: #70757a; font-size: 0.8rem; text-transform: uppercase; }
@@ -13,32 +18,29 @@
         button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #1a73e8; color: white; font-weight: 600; cursor: pointer; margin-top: 5px; }
         button:hover { background: #1557b0; }
         .secondary-btn { background: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <style>
-        /* Simple Modal Styles */
+        
+        /* QR MODAL STYLES */
         .modal {
             display: none; /* Hidden by default */
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); z-index: 1000;
+            background-color: rgba(0,0,0,0.85); z-index: 1000;
             justify-content: center; align-items: center;
         }
         .modal-content {
-            background: white; padding: 20px; border-radius: 15px;
+            background: white; padding: 25px; border-radius: 20px;
             text-align: center; max-width: 350px; width: 90%; position: relative;
         }
         .close-btn {
-            position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa;
+            position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; color: #aaa; font-weight: bold;
         }
-        #reader { width: 100%; } /* Camera container */
-
+        .close-btn:hover { color: #333; }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="wallet-container">
-    <h2>Web3 Wallet (Modular) 🧩</h2>
+    <h2>Web3 Wallet 🧩</h2>
 
     <section style="background: #fff; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px;">
         <h4>Settings</h4>
@@ -48,7 +50,7 @@
             <option value="mainnet">Ethereum Mainnet</option>
         </select>
         
-        <label style="font-size:0.75rem;">Asset to Manage:</label>
+        <label style="font-size:0.75rem;">Asset:</label>
         <select id="assetSelect">
             </select>
     </section>
@@ -56,7 +58,10 @@
     <section style="margin-bottom: 20px;">
         <h4>Balance Check</h4>
         <input type="text" id="addressInput" placeholder="Address...">
-        <button id="checkBtn">Check Balance</button>
+        <div style="display: flex; gap: 10px;">
+            <button id="checkBtn" style="flex: 2;">Check Balance</button>
+            <button id="receiveBtn" class="secondary-btn" style="flex: 1;">⬇️ QR</button>
+        </div>
         <p>Result: <strong id="balanceText">---</strong></p>
     </section>
 
@@ -71,41 +76,42 @@
         <div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
             <input type="text" id="recoverInput" placeholder="Enter Seed Phrase...">
             <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
-            <p id="recoverStatus"></p>
-            <div id="recoveredInfo" style="display:none">
+            <p id="recoverStatus" style="font-size: 0.8rem; margin-top: 5px;"></p>
+            <div id="recoveredInfo" style="display:none; font-size: 0.8rem;">
                 Active: <code id="recoveredAddress"></code>
             </div>
         </div>
     </section>
-    
-    <div style="display: flex; gap: 10px; margin-top: 10px;"><button id="receiveBtn" class="secondary-btn">⬇️ Receive (QR)</button></div>
-    
+
     <section>
         <h4>Send Crypto</h4>
         <div style="position: relative;">
             <input type="text" id="sendTo" placeholder="Recipient Address (0x...)">
-            <button id="scanBtn" style="position: abosolute; right: 5px; top: 5px; padding: 5px 10px; width: auto; font-size: 1.2rem; background: none; border: none; cursor: pointer;">📷</button>
+            <button id="scanBtn" style="position: absolute; right: 8px; top: 6px; padding: 0 10px; width: auto; height: 35px; background: none; border: none; cursor: pointer; font-size: 1.2rem;" title="Scan QR">📷</button>
         </div>
+        <input type="number" id="sendAmount" placeholder="Amount">
+        <button id="sendBtn" style="background: #34a853;">Sign & Send</button>
+        <p id="txStatus" style="font-size:0.8rem; margin-top:10px;"></p>
     </section>
+</div>
 
-    <div id="qrModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('qeModal')">&times;</span>
-            <h3>Scan to Pay Me</h3>
-            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
-            <code id="qrAddressText" style="font-size: 0.7rem;"></code>
-        </div>
-    </div>
-
-    <div id="scanModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="stopScanner()">&times;</span>
-            <h3>Scan QR Code</h3>
-            <div id="reader"></div><p id="scanStatus" style="font-size: 0.8rem; color: #666;">Waiting for camera permission...</p>
-        </div>
+<div id="qrModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('qrModal')">&times;</span>
+        <h3>Scan to Pay Me</h3>
+        <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+        <code id="qrAddressText" style="font-size: 0.65rem; color: #555;"></code>
     </div>
 </div>
-    
-<script src="config.js"></script>    <script src="services.js"></script>  <script src="app.js"></script>       
-</body>
+
+<div id="scanModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="stopScanner()">&times;</span>
+        <h3>Scan QR Code</h3>
+        <div id="reader"></div>
+        <p id="scanStatus" style="font-size: 0.8rem; color: #666; margin-top: 10px;">Waiting for camera permission...</p>
+    </div>
+</div>
+
+<script src="config.js"></script>    <script src="services.js"></script>  <script src="app.js"></script>       </body>
 </html>
