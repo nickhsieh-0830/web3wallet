@@ -55,6 +55,7 @@
 
     <section style="margin-bottom: 20px;">
         <h4>Wallet Management</h4>
+        
         <button id="genBtn" class="secondary-btn">New Wallet</button>
         
         <div id="walletInfo" style="display:none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
@@ -78,8 +79,16 @@
             <input type="text" id="recoverInput" placeholder="Enter Seed Phrase to Load...">
             <button id="recoverBtn" class="secondary-btn">Load Wallet</button>
             <p id="recoverStatus" style="font-size: 0.8rem; margin-top: 5px;"></p>
-            <div id="recoveredInfo" style="display:none; font-size: 0.8rem;">
-                Active: <code id="recoveredAddress"></code>
+            
+            <div id="recoveredInfo" style="display:none; margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 0.75rem; color: #70757a; font-weight: bold;">Active Address:</span>
+                    <div>
+                        <span id="copyRecoverMsg" style="display:none; font-size: 0.75rem; color: #34a853; margin-right: 5px; font-weight: bold;">✅ Copied!</span>
+                        <button id="copyRecoverBtn" style="background:none; border:none; color:#1a73e8; text-decoration:underline; cursor:pointer; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                    </div>
+                </div>
+                <code id="recoveredAddress" style="background:none; padding:0; margin:0; font-size: 0.8rem; word-break: break-all;"></code>
             </div>
         </div>
     </section>
