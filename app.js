@@ -4,10 +4,9 @@ let html5QrCode = null;
 
 // --- STARTUP ---
 window.addEventListener('load', () => {
-    walletService.initProvider('sepolia'); // Default to Sepolia
+    walletService.initProvider('sepolia');
     updateAssetDropdown('sepolia');
     
-    // Check Local Storage
     const savedAddress = localStorage.getItem('userAddress');
     if (savedAddress) {
         document.getElementById('addressInput').value = savedAddress;
@@ -16,7 +15,7 @@ window.addEventListener('load', () => {
     }
 });
 
-// --- SETTINGS (Network & Asset) ---
+// --- SETTINGS ---
 document.getElementById('networkSelect').addEventListener('change', (e) => {
     const netKey = e.target.value;
     walletService.initProvider(netKey);
@@ -35,27 +34,23 @@ function updateAssetDropdown(networkKey) {
     const select = document.getElementById('assetSelect');
     const assets = CONFIG.assets[networkKey];
     select.innerHTML = "";
-    
     assets.forEach((asset, index) => {
         const option = document.createElement("option");
         option.value = index;
         option.innerText = `${asset.symbol}`;
         select.appendChild(option);
     });
-    selectedAsset = assets[0]; // Default to first asset
+    selectedAsset = assets[0];
 }
 
-// --- ACTIONS: CHECK BALANCE ---
+// --- ACTIONS ---
 document.getElementById('checkBtn').addEventListener('click', async () => {
     const address = document.getElementById('addressInput').value.trim();
     const balanceText = document.getElementById('balanceText');
-    
     if (!ethers.isAddress(address)) return alert("Invalid Address");
-
     balanceText.innerText = "Syncing...";
     try {
         const balance = await walletService.getBalance(address, selectedAsset);
-        // Format to 4 decimal places for display
         const displayBal = parseFloat(balance).toFixed(4);
         balanceText.innerText = `${displayBal} ${selectedAsset.symbol}`;
     } catch (err) {
@@ -64,7 +59,6 @@ document.getElementById('checkBtn').addEventListener('click', async () => {
     }
 });
 
-// --- ACTIONS: SEND ---
 document.getElementById('sendBtn').addEventListener('click', async () => {
     const to = document.getElementById('sendTo').value.trim();
     const amount = document.getElementById('sendAmount').value;
@@ -80,10 +74,8 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     try {
         walletService.connectWallet(phrase);
         const tx = await walletService.sendTransaction(to, amount, selectedAsset);
-        
         const explorer = walletService.currentNetwork.explorer;
         status.innerHTML = `Hash: <a href="${explorer}/tx/${tx.hash}" target="_blank">View</a>`;
-        
         await tx.wait();
         status.innerHTML += " ✅ Confirmed!";
         status.style.color = "#34a853";
@@ -101,7 +93,6 @@ document.getElementById('genBtn').addEventListener('click', () => {
     document.getElementById('phraseText').value = w.mnemonic.phrase;
     document.getElementById('addressText').innerText = w.address;
     
-    // Reset Privacy UI
     document.getElementById('phraseText').type = "password";
     document.getElementById('toggleReveal').checked = false;
     
@@ -123,16 +114,25 @@ document.getElementById('recoverBtn').addEventListener('click', () => {
     }
 });
 
-// Copy & Reveal Logic
 document.getElementById('toggleReveal').addEventListener('change', (e) => {
     document.getElementById('phraseText').type = e.target.checked ? 'text' : 'password';
 });
 
+// --- NEW COPY LOGIC (Inline Feedback) ---
 document.getElementById('copyBtn').addEventListener('click', () => {
     const phrase = document.getElementById('phraseText').value;
     if (!phrase) return;
-    navigator.clipboard.writeText(phrase);
-    alert("Copied to clipboard!");
+    
+    navigator.clipboard.writeText(phrase).then(() => {
+        // Show the hidden "Copied!" span
+        const msg = document.getElementById('copyMsg');
+        msg.style.display = "inline";
+        
+        // Hide it again after 2 seconds
+        setTimeout(() => {
+            msg.style.display = "none";
+        }, 2000);
+    });
 });
 
 // --- QR CODES ---
