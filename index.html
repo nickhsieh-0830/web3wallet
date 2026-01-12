@@ -1,14 +1,33 @@
-<style>
-        /* --- UPDATED THEME VARIABLES --- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Pocket Wallet</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        /* --- THEME VARIABLES --- */
         :root {
-            --bg-color: #FFF8F0; /* Soft Cream */
-            --card-bg: #FFFFFF;
-            --text-dark: #2D3748;
-            --text-light: #718096;
-            --input-bg: #F7FAFC;
+            --bg-color: #FFF8F0;      /* Soft Cream */
+            --card-bg: #FFFFFF;       /* White Cards */
+            --text-dark: #2D3748;     /* Dark Grey Text */
+            --text-light: #718096;    /* Light Grey Text */
+            --input-bg: #F7FAFC;      /* Light Blue-Grey Input */
             --border-radius: 16px;
+            
+            /* Button Colors (Soft Tint) */
+            --btn-light-bg: #FFEBE5;  /* Pale Peach */
+            --btn-light-text: #FF5722;/* Deep Coral */
+            --btn-light-border: #FFCCBC;
         }
 
+        /* --- RESET --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
@@ -26,6 +45,7 @@
 
         h2 { text-align: center; font-weight: 700; color: var(--text-dark); margin-bottom: 25px; font-size: 1.5rem; }
 
+        /* --- CARDS --- */
         section {
             background: var(--card-bg); padding: 20px; border-radius: var(--border-radius);
             box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
@@ -34,13 +54,15 @@
 
         h4 { margin: 0 0 15px 0; color: var(--text-light); font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
 
+        /* --- INPUTS --- */
         input, select {
             width: 100%; padding: 14px 16px; margin-bottom: 12px; border: 2px solid transparent;
             background-color: var(--input-bg); border-radius: 12px; font-size: 0.95rem;
             font-family: 'Poppins', sans-serif; color: var(--text-dark); outline: none;
         }
-        input:focus, select:focus { background-color: #fff; border-color: #FFCCBC; box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.1); }
+        input:focus, select:focus { background-color: #fff; border-color: var(--btn-light-border); box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.1); }
 
+        /* --- BUTTONS --- */
         button {
             width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 600;
             font-size: 1rem; cursor: pointer; font-family: 'Poppins', sans-serif;
@@ -48,31 +70,27 @@
         }
         button:active { transform: scale(0.98); }
 
-        /* --- LIGHTER "SOFT TINT" BUTTON STYLE --- */
+        /* LIGHTER BUTTON STYLE (Requested) */
         #checkBtn, #sendBtn { 
-            /* Very Light Peach Background */
-            background-color: #FFEBE5; 
-            /* Darker Coral Text for Contrast */
-            color: #FF5722; 
-            /* Subtle Border */
-            border: 1px solid #FFCCBC;
-            /* Removed Shadow for a flatter, lighter look */
-            box-shadow: none;
+            background-color: var(--btn-light-bg); 
+            color: var(--btn-light-text); 
+            border: 1px solid var(--btn-light-border);
+            box-shadow: none; /* No heavy shadow */
         }
         
-        /* Hover Effect */
         #checkBtn:hover, #sendBtn:hover {
-            background-color: #FFCCBC; /* Slightly darker on hover */
+            background-color: #FFCCBC; 
             color: #D84315;
         }
 
         .secondary-btn { background: #EDF2F7; color: var(--text-dark); }
         
+        /* --- UTILS --- */
         #balanceText { font-size: 1.8rem; display: block; margin-top: 5px; color: var(--text-dark); }
         .row { display: flex; gap: 12px; align-items: center; }
         .success-badge { display: none; font-size: 0.75rem; color: #48BB78; background: #F0FFF4; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
 
-        /* MODALS */
+        /* --- MODALS --- */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(45, 55, 72, 0.9); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-content { background: white; padding: 30px; border-radius: 24px; text-align: center; width: 90%; max-width: 340px; position: relative; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #CBD5E0; cursor: pointer; }
@@ -84,3 +102,112 @@
         }
         .clear-link:hover { color: #FF8A65; }
     </style>
+</head>
+<body>
+
+<div class="wallet-container">
+    <h2>🦊 My Pocket Wallet</h2>
+
+    <section>
+        <h4>Network & Asset</h4>
+        <div class="row">
+            <select id="networkSelect" style="flex: 1;">
+                <option value="sepolia">Sepolia</option>
+                <option value="mainnet">Mainnet</option>
+            </select>
+            <select id="assetSelect" style="flex: 1;"></select>
+        </div>
+    </section>
+
+    <section style="text-align: center; padding: 30px 20px;">
+        <h4 style="margin-bottom: 5px;">Total Balance</h4>
+        <strong id="balanceText">0.0000</strong>
+        <div style="margin-top: 20px; position: relative;">
+            <input type="text" id="addressInput" placeholder="Paste 0x Address..." style="text-align: center;">
+        </div>
+        <div class="row" style="margin-top: 10px;">
+            <button id="checkBtn" style="flex: 2;">Refresh</button>
+            <button id="receiveBtn" class="secondary-btn" style="flex: 1; font-size: 1.2rem;">⬇️</button>
+        </div>
+    </section>
+
+    <section>
+        <h4>Send Crypto</h4>
+        <div style="position: relative;">
+            <input type="text" id="sendTo" placeholder="Recipient (0x...)" style="padding-right: 50px;">
+            <button id="scanBtn" style="position: absolute; right: 8px; top: 8px; width: 35px; height: 35px; padding: 0; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">📷</button>
+        </div>
+        <div class="row">
+            <input type="number" id="sendAmount" placeholder="0.00" style="flex: 1;">
+            <button id="sendBtn" style="flex: 1;">Send 🚀</button>
+        </div>
+        <p id="txStatus" style="font-size:0.8rem; margin-top:10px; word-break: break-all; text-align: center; color: var(--text-light); min-height: 1.2em;"></p>
+    </section>
+
+    <section>
+        <h4>Wallet Tools</h4>
+        <div class="row">
+            <button id="genBtn" class="secondary-btn" style="font-size: 0.9rem;">New Wallet</button>
+            <button id="recoverBtn" class="secondary-btn" style="font-size: 0.9rem;">Load Wallet</button>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <input type="text" id="recoverInput" placeholder="Enter seed phrase to load...">
+            <p id="recoverStatus" style="font-size: 0.8rem; text-align: center; margin-bottom: 0;"></p>
+            
+            <div id="recoveredInfo" style="display:none; margin-top: 10px; background: #F7FAFC; padding: 12px; border-radius: 12px; border: 1px dashed #CBD5E0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 700;">ACTIVE ADDRESS</span>
+                    <div>
+                        <span id="copyRecoverMsg" class="success-badge">Copied!</span>
+                        <button id="copyRecoverBtn" style="background:none; border:none; color: #FF5A5F; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                    </div>
+                </div>
+                <code id="recoveredAddress" style="display:block; font-size: 0.75rem; word-break: break-all; color: var(--text-dark);"></code>
+            </div>
+        </div>
+        
+        <div id="walletInfo" style="display:none; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #eee;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #FF5A5F;">SECRET PHRASE</span>
+                <div>
+                    <span id="copyMsg" class="success-badge">Copied!</span>
+                    <button id="copyBtn" style="background:none; border:none; color: #FF5A5F; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                </div>
+            </div>
+            <input type="password" id="phraseText" readonly style="background: #FFF5F5; color: #C53030; letter-spacing: 1px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 15px;">
+                <input type="checkbox" id="toggleReveal" style="width: 20px; height: 20px; margin: 0; accent-color: #FF5A5F;"> 
+                <label for="toggleReveal" style="cursor:pointer; color: var(--text-light);">Show Words</label>
+            </div>
+            <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 700; text-transform: uppercase;">Public Address</span>
+            <code id="addressText" style="display:block; margin-top: 5px; font-size: 0.75rem; word-break: break-all; background: #F7FAFC; padding: 10px; border-radius: 8px;"></code>
+        </div>
+    </section>
+
+    <div id="clearDataBtn" class="clear-link">Clear Saved Data & Reset</div>
+
+</div>
+
+<div id="qrModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('qrModal')">&times;</span>
+        <h3 style="margin-top: 0; color: var(--text-dark);">Scan to Pay</h3>
+        <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+        <code id="qrAddressText" style="font-size: 0.75rem; color: var(--text-light); word-break: break-all;"></code>
+    </div>
+</div>
+<div id="scanModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; padding: 20px;">
+        <span class="close-btn" onclick="stopScanner()">&times;</span>
+        <h3 style="margin-top: 0;">Scan QR Code</h3>
+        <div id="reader"></div>
+    </div>
+</div>
+
+<script src="config.js?v=6"></script>
+<script src="services.js?v=6"></script>
+<script src="app.js?v=6"></script>
+
+</body>
+</html>
