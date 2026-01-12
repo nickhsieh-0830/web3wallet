@@ -118,7 +118,7 @@ document.getElementById('toggleReveal').addEventListener('change', (e) => {
     document.getElementById('phraseText').type = e.target.checked ? 'text' : 'password';
 });
 
-// 1. Copy Secret Phrase
+// 1. Copy Secret Phrase (New Wallet)
 document.getElementById('copyBtn').addEventListener('click', () => {
     const phrase = document.getElementById('phraseText').value;
     if (!phrase) return;
@@ -129,8 +129,9 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     });
 });
 
-// 2. NEW: Copy Recovered Address
+// 2. Copy Active Address (Loaded Wallet)
 document.getElementById('copyRecoverBtn').addEventListener('click', () => {
+    // Note: We get .innerText from the code element
     const addr = document.getElementById('recoveredAddress').innerText;
     if (!addr) return;
     navigator.clipboard.writeText(addr).then(() => {
