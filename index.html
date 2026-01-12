@@ -12,12 +12,13 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
-        /* --- THEME VARIABLES --- */
+        /* --- UPDATED THEME VARIABLES --- */
         :root {
             --bg-color: #FFF8F0;
             --card-bg: #FFFFFF;
-            --primary-gradient: linear-gradient(135deg, #FF8066 0%, #FF5A5F 100%);
-            --primary-shadow: rgba(255, 90, 95, 0.3);
+            /* New Lighter Primary Color (Soft Coral) */
+            --primary-color: #FF8A65; 
+            --primary-shadow: rgba(255, 138, 101, 0.3);
             --text-dark: #2D3748;
             --text-light: #718096;
             --input-bg: #F7FAFC;
@@ -37,19 +38,13 @@
             justify-content: center;
         }
 
-        .wallet-container {
-            width: 100%;
-            max-width: 420px;
-            margin-bottom: 50px;
-        }
+        .wallet-container { width: 100%; max-width: 420px; margin-bottom: 50px; }
 
-        h2 {
-            text-align: center; font-weight: 700; color: var(--text-dark); margin-bottom: 25px; font-size: 1.5rem;
-        }
+        h2 { text-align: center; font-weight: 700; color: var(--text-dark); margin-bottom: 25px; font-size: 1.5rem; }
 
         section {
             background: var(--card-bg); padding: 20px; border-radius: var(--border-radius);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
             border: 1px solid rgba(0,0,0,0.02);
         }
 
@@ -60,15 +55,28 @@
             background-color: var(--input-bg); border-radius: 12px; font-size: 0.95rem;
             font-family: 'Poppins', sans-serif; color: var(--text-dark); outline: none;
         }
-        input:focus, select:focus { background-color: #fff; border-color: #FFCDD2; box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1); }
+        input:focus, select:focus { background-color: #fff; border-color: #FFCCBC; box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.1); }
 
         button {
             width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 600;
             font-size: 1rem; cursor: pointer; font-family: 'Poppins', sans-serif;
+            transition: all 0.2s ease;
         }
         button:active { transform: scale(0.98); }
 
-        #checkBtn, #sendBtn { background: var(--primary-gradient); color: white; box-shadow: 0 8px 15px var(--primary-shadow); }
+        /* --- UPDATED BUTTON STYLE (Lighter) --- */
+        #checkBtn, #sendBtn { 
+            background: var(--primary-color); 
+            color: white; 
+            /* Softer Shadow */
+            box-shadow: 0 4px 12px var(--primary-shadow); 
+        }
+        /* Hover Effect */
+        #checkBtn:hover, #sendBtn:hover {
+            background: #FF7043; /* Slightly darker on hover */
+            box-shadow: 0 6px 15px var(--primary-shadow);
+        }
+
         .secondary-btn { background: #EDF2F7; color: var(--text-dark); }
         
         #balanceText { font-size: 1.8rem; display: block; margin-top: 5px; color: var(--text-dark); }
@@ -81,12 +89,11 @@
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #CBD5E0; cursor: pointer; }
         #reader { width: 100%; border-radius: 16px; overflow: hidden; margin-top: 15px; }
         
-        /* NEW: Clear Data Button */
         .clear-link {
             text-align: center; font-size: 0.8rem; color: #CBD5E0; 
             margin-top: 30px; cursor: pointer; text-decoration: underline;
         }
-        .clear-link:hover { color: #FF5A5F; }
+        .clear-link:hover { color: #FF8A65; }
     </style>
 </head>
 <body>
@@ -144,7 +151,7 @@
                     <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 700;">ACTIVE ADDRESS</span>
                     <div>
                         <span id="copyRecoverMsg" class="success-badge">Copied!</span>
-                        <button id="copyRecoverBtn" style="background:none; border:none; color: #FF5A5F; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                        <button id="copyRecoverBtn" style="background:none; border:none; color: #FF8A65; font-size:0.8rem; padding:0; width:auto;">Copy</button>
                     </div>
                 </div>
                 <code id="recoveredAddress" style="display:block; font-size: 0.75rem; word-break: break-all; color: var(--text-dark);"></code>
@@ -152,15 +159,15 @@
         </div>
         <div id="walletInfo" style="display:none; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #eee;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.8rem; font-weight: bold; color: #FF5A5F;">SECRET PHRASE</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #FF8A65;">SECRET PHRASE</span>
                 <div>
                     <span id="copyMsg" class="success-badge">Copied!</span>
-                    <button id="copyBtn" style="background:none; border:none; color: #FF5A5F; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                    <button id="copyBtn" style="background:none; border:none; color: #FF8A65; font-size:0.8rem; padding:0; width:auto;">Copy</button>
                 </div>
             </div>
             <input type="password" id="phraseText" readonly style="background: #FFF5F5; color: #C53030; letter-spacing: 1px;">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 15px;">
-                <input type="checkbox" id="toggleReveal" style="width: 20px; height: 20px; margin: 0; accent-color: #FF5A5F;"> 
+                <input type="checkbox" id="toggleReveal" style="width: 20px; height: 20px; margin: 0; accent-color: #FF8A65;"> 
                 <label for="toggleReveal" style="cursor:pointer; color: var(--text-light);">Show Words</label>
             </div>
             <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 700; text-transform: uppercase;">Public Address</span>
@@ -188,9 +195,9 @@
     </div>
 </div>
 
-<script src="config.js?v=4"></script>
-<script src="services.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="config.js?v=5"></script>
+<script src="services.js?v=5"></script>
+<script src="app.js?v=5"></script>
 
 </body>
 </html>
