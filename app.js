@@ -118,20 +118,25 @@ document.getElementById('toggleReveal').addEventListener('change', (e) => {
     document.getElementById('phraseText').type = e.target.checked ? 'text' : 'password';
 });
 
-// --- NEW COPY LOGIC (Inline Feedback) ---
+// 1. Copy Secret Phrase
 document.getElementById('copyBtn').addEventListener('click', () => {
     const phrase = document.getElementById('phraseText').value;
     if (!phrase) return;
-    
     navigator.clipboard.writeText(phrase).then(() => {
-        // Show the hidden "Copied!" span
         const msg = document.getElementById('copyMsg');
         msg.style.display = "inline";
-        
-        // Hide it again after 2 seconds
-        setTimeout(() => {
-            msg.style.display = "none";
-        }, 2000);
+        setTimeout(() => msg.style.display = "none", 2000);
+    });
+});
+
+// 2. NEW: Copy Recovered Address
+document.getElementById('copyRecoverBtn').addEventListener('click', () => {
+    const addr = document.getElementById('recoveredAddress').innerText;
+    if (!addr) return;
+    navigator.clipboard.writeText(addr).then(() => {
+        const msg = document.getElementById('copyRecoverMsg');
+        msg.style.display = "inline";
+        setTimeout(() => msg.style.display = "none", 2000);
     });
 });
 
