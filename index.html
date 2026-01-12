@@ -14,17 +14,16 @@
     <style>
         /* --- THEME VARIABLES --- */
         :root {
-            --bg-color: #FFF8F0;      /* Soft Cream */
+            --bg-color: #FFF8F0;      /* Soft Cream (Page Background) */
             --card-bg: #FFFFFF;       /* White Cards */
-            --text-dark: #2D3748;     /* Dark Grey Text */
-            --text-light: #718096;    /* Light Grey Text */
-            --input-bg: #F7FAFC;      /* Light Blue-Grey Input */
+            --text-dark: #2D3748;     
+            --text-light: #718096;    
+            --input-bg: #F7FAFC;      
             --border-radius: 16px;
             
-            /* Button Colors (Soft Tint) */
-            --btn-light-bg: #FFEBE5;  /* Pale Peach */
-            --btn-light-text: #FF5722;/* Deep Coral */
-            --btn-light-border: #FFCCBC;
+            /* Button Colors */
+            --accent-color: #FF5722;  /* Deep Coral (Text) */
+            --accent-border: #FF8A65; /* Soft Coral (Border) */
         }
 
         /* --- RESET --- */
@@ -60,7 +59,7 @@
             background-color: var(--input-bg); border-radius: 12px; font-size: 0.95rem;
             font-family: 'Poppins', sans-serif; color: var(--text-dark); outline: none;
         }
-        input:focus, select:focus { background-color: #fff; border-color: var(--btn-light-border); box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.1); }
+        input:focus, select:focus { background-color: #fff; border-color: var(--accent-border); box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.1); }
 
         /* --- BUTTONS --- */
         button {
@@ -70,17 +69,17 @@
         }
         button:active { transform: scale(0.98); }
 
-        /* LIGHTER BUTTON STYLE (Requested) */
+        /* OUTLINE STYLE BUTTONS (Matches Page Background) */
         #checkBtn, #sendBtn { 
-            background-color: var(--btn-light-bg); 
-            color: var(--btn-light-text); 
-            border: 1px solid var(--btn-light-border);
-            box-shadow: none; /* No heavy shadow */
+            background-color: var(--bg-color); /* Same as page background */
+            color: var(--accent-color); 
+            border: 2px solid var(--accent-border); /* Visible border to define shape */
+            box-shadow: none;
         }
         
         #checkBtn:hover, #sendBtn:hover {
-            background-color: #FFCCBC; 
-            color: #D84315;
+            background-color: #FFEBE5; /* Very subtle peach on hover */
+            border-color: var(--accent-color);
         }
 
         .secondary-btn { background: #EDF2F7; color: var(--text-dark); }
@@ -100,7 +99,7 @@
             text-align: center; font-size: 0.8rem; color: #CBD5E0; 
             margin-top: 30px; cursor: pointer; text-decoration: underline;
         }
-        .clear-link:hover { color: #FF8A65; }
+        .clear-link:hover { color: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -160,7 +159,7 @@
                     <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 700;">ACTIVE ADDRESS</span>
                     <div>
                         <span id="copyRecoverMsg" class="success-badge">Copied!</span>
-                        <button id="copyRecoverBtn" style="background:none; border:none; color: #FF5A5F; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                        <button id="copyRecoverBtn" style="background:none; border:none; color: var(--accent-color); font-size:0.8rem; padding:0; width:auto;">Copy</button>
                     </div>
                 </div>
                 <code id="recoveredAddress" style="display:block; font-size: 0.75rem; word-break: break-all; color: var(--text-dark);"></code>
@@ -169,15 +168,15 @@
         
         <div id="walletInfo" style="display:none; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #eee;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.8rem; font-weight: bold; color: #FF5A5F;">SECRET PHRASE</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: var(--accent-color);">SECRET PHRASE</span>
                 <div>
                     <span id="copyMsg" class="success-badge">Copied!</span>
-                    <button id="copyBtn" style="background:none; border:none; color: #FF5A5F; font-size:0.8rem; padding:0; width:auto;">Copy</button>
+                    <button id="copyBtn" style="background:none; border:none; color: var(--accent-color); font-size:0.8rem; padding:0; width:auto;">Copy</button>
                 </div>
             </div>
             <input type="password" id="phraseText" readonly style="background: #FFF5F5; color: #C53030; letter-spacing: 1px;">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 15px;">
-                <input type="checkbox" id="toggleReveal" style="width: 20px; height: 20px; margin: 0; accent-color: #FF5A5F;"> 
+                <input type="checkbox" id="toggleReveal" style="width: 20px; height: 20px; margin: 0; accent-color: var(--accent-color);"> 
                 <label for="toggleReveal" style="cursor:pointer; color: var(--text-light);">Show Words</label>
             </div>
             <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 700; text-transform: uppercase;">Public Address</span>
@@ -205,9 +204,9 @@
     </div>
 </div>
 
-<script src="config.js?v=6"></script>
-<script src="services.js?v=6"></script>
-<script src="app.js?v=6"></script>
+<script src="config.js?v=7"></script>
+<script src="services.js?v=7"></script>
+<script src="app.js?v=7"></script>
 
 </body>
 </html>
