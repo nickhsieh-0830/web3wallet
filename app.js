@@ -1,5 +1,5 @@
 // Global State
-let selectedAsset = null;
+let selectedAsset = 'ALL'; // Default to ALL
 let html5QrCode = null;
 
 // --- STARTUP ---
@@ -25,41 +25,86 @@ document.getElementById('networkSelect').addEventListener('change', (e) => {
 
 document.getElementById('assetSelect').addEventListener('change', (e) => {
     const netKey = document.getElementById('networkSelect').value;
-    const index = e.target.value;
-    selectedAsset = CONFIG.assets[netKey][index];
+    const val = e.target.value;
+
+    if (val === 'ALL') {
+        selectedAsset = 'ALL';
+    } else {
+        // val is the index number
+        selectedAsset = CONFIG.assets[netKey][val];
+    }
     document.getElementById('balanceText').innerText = "---";
 });
 
 function updateAssetDropdown(networkKey) {
     const select = document.getElementById('assetSelect');
     const assets = CONFIG.assets[networkKey];
-    select.innerHTML = "";
+    
+    // 1. Clear and Add "All" Option
+    select.innerHTML = `<option value="ALL">All Assets</option>`;
+    
+    // 2. Add individual assets
     assets.forEach((asset, index) => {
         const option = document.createElement("option");
         option.value = index;
         option.innerText = `${asset.symbol}`;
         select.appendChild(option);
     });
-    selectedAsset = assets[0];
+
+    // 3. Set Default State
+    selectedAsset = 'ALL'; 
+    select.value = 'ALL';
 }
 
-// --- ACTIONS ---
+// --- ACTIONS: CHECK BALANCE ---
 document.getElementById('checkBtn').addEventListener('click', async () => {
     const address = document.getElementById('addressInput').value.trim();
     const balanceText = document.getElementById('balanceText');
+    const netKey = document.getElementById('networkSelect').value;
+
     if (!ethers.isAddress(address)) return alert("Invalid Address");
-    balanceText.innerText = "Syncing...";
+    
+    balanceText.innerHTML = "Syncing..."; // Use innerHTML to support <br>
+
     try {
-        const balance = await walletService.getBalance(address, selectedAsset);
-        const displayBal = parseFloat(balance).toFixed(4);
-        balanceText.innerText = `${displayBal} ${selectedAsset.symbol}`;
+        if (selectedAsset === 'ALL') {
+            // STRATEGY: Fetch ALL balances in parallel
+            const assets = CONFIG.assets[netKey];
+            
+            // Create an array of promises (tasks)
+            const tasks = assets.map(async (asset) => {
+                const bal = await walletService.getBalance(address, asset);
+                const displayBal = parseFloat(bal).toFixed(4);
+                // Return string only if balance > 0 (Optional, remove if you want to see 0.0000)
+                return `<div><strong>${displayBal}</strong> ${asset.symbol}</div>`;
+            });
+
+            // Wait for all tasks to finish
+            const results = await Promise.all(tasks);
+            
+            // Join them nicely
+            balanceText.innerHTML = results.join("");
+
+        } else {
+            // STRATEGY: Fetch Single Balance
+            const balance = await walletService.getBalance(address, selectedAsset);
+            const displayBal = parseFloat(balance).toFixed(4);
+            balanceText.innerText = `${displayBal} ${selectedAsset.symbol}`;
+        }
+
     } catch (err) {
         console.error(err);
-        balanceText.innerText = "Error";
+        balanceText.innerText = "Error syncing balances";
     }
 });
 
+// --- ACTIONS: SEND ---
 document.getElementById('sendBtn').addEventListener('click', async () => {
+    // ⚠️ Prevent sending if "ALL" is selected
+    if (selectedAsset === 'ALL') {
+        return alert("Please select a specific asset (e.g., ETH) to send.");
+    }
+
     const to = document.getElementById('sendTo').value.trim();
     const amount = document.getElementById('sendAmount').value;
     const phrase = document.getElementById('recoverInput').value.trim() || 
@@ -118,7 +163,7 @@ document.getElementById('toggleReveal').addEventListener('change', (e) => {
     document.getElementById('phraseText').type = e.target.checked ? 'text' : 'password';
 });
 
-// 1. Copy Secret Phrase (New Wallet)
+// Copy Phrase
 document.getElementById('copyBtn').addEventListener('click', () => {
     const phrase = document.getElementById('phraseText').value;
     if (!phrase) return;
@@ -129,9 +174,8 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     });
 });
 
-// 2. Copy Active Address (Loaded Wallet)
+// Copy Address
 document.getElementById('copyRecoverBtn').addEventListener('click', () => {
-    // Note: We get .innerText from the code element
     const addr = document.getElementById('recoveredAddress').innerText;
     if (!addr) return;
     navigator.clipboard.writeText(addr).then(() => {
