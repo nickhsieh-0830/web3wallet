@@ -14,16 +14,15 @@
     <style>
         /* --- THEME VARIABLES --- */
         :root {
-            --bg-color: #FFF8F0;      /* Soft Cream (Page Background) */
-            --card-bg: #FFFFFF;       /* White Cards */
+            --bg-color: #FFF8F0;      /* Soft Cream */
+            --card-bg: #FFFFFF;
             --text-dark: #2D3748;     
             --text-light: #718096;    
             --input-bg: #F7FAFC;      
             --border-radius: 16px;
             
             /* Button Colors */
-            --accent-color: #FF5722;  /* Deep Coral (Text) */
-            --accent-border: #FF8A65; /* Soft Coral (Border) */
+            --accent-color: #FF5722;  /* Deep Coral */
         }
 
         /* --- RESET --- */
@@ -59,7 +58,7 @@
             background-color: var(--input-bg); border-radius: 12px; font-size: 0.95rem;
             font-family: 'Poppins', sans-serif; color: var(--text-dark); outline: none;
         }
-        input:focus, select:focus { background-color: #fff; border-color: var(--accent-border); box-shadow: 0 0 0 3px rgba(255, 138, 101, 0.1); }
+        input:focus, select:focus { background-color: #fff; border-color: #FFCCBC; box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1); }
 
         /* --- BUTTONS --- */
         button {
@@ -69,17 +68,18 @@
         }
         button:active { transform: scale(0.98); }
 
-        /* OUTLINE STYLE BUTTONS (Matches Page Background) */
+        /* NEW STYLE: Soft Tint (No Border) */
         #checkBtn, #sendBtn { 
-            background-color: var(--bg-color); /* Same as page background */
+            /* 10% Opacity of the Accent Color */
+            background-color: rgba(255, 87, 34, 0.08); 
             color: var(--accent-color); 
-            border: 2px solid var(--accent-border); /* Visible border to define shape */
+            border: none; /* Removed the outline */
             box-shadow: none;
         }
         
         #checkBtn:hover, #sendBtn:hover {
-            background-color: #FFEBE5; /* Very subtle peach on hover */
-            border-color: var(--accent-color);
+            /* Slightly darker on hover (15% Opacity) */
+            background-color: rgba(255, 87, 34, 0.15); 
         }
 
         .secondary-btn { background: #EDF2F7; color: var(--text-dark); }
